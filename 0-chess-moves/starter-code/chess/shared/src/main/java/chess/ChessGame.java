@@ -204,7 +204,54 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if (isInCheck(teamColor)) return false;
+
+        for (var row = 1; row <= 8; row++) {
+            for (var col = 1; col <= 8; col++) {
+                ChessPosition curPos = new ChessPosition(row, col);
+                ChessPiece curPiece = board.getPiece(curPos);
+
+                if (curPiece != null && curPiece.getTeamColor() == teamColor) {
+                    Collection<ChessMove> potenialMoves = curPiece.pieceMoves(board, curPos);
+
+                    for (ChessMove move : potenialMoves) {
+                        if (isLegalMove(move)) return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean isLegalMove(ChessMove move) {
+        var tempBoard = new ChessBoard(board);
+        ChessPiece movingPiece = tempBoard.getPiece(move.getStartPosition());
+        tempBoard.addPiece(move.getEndPosition(), movingPiece);
+        tempBoard.addPiece(move.getStartPosition(), null);
+
+        if (isInCheckOnBoard(movingPiece.getTeamColor(), tempBoard)) return false;
+
+        return true;
+    }
+
+    private boolean isInCheckOnBoard(TeamColor teamColor, ChessBoard tempBoard) {
+        ChessPosition kingPosition = findKingLocation(teamColor);
+
+        for (var row = 1; row <= 8; row++) {
+            for (var col = 1; col <= 8; col++) {
+                ChessPosition curPos = new ChessPosition(row, col);
+                ChessPiece curPiece = board.getPiece(curPos);
+
+                if (curPiece != null && curPiece.getTeamColor() != teamColor) {
+                    Collection<ChessMove> potentialMoves = curPiece.pieceMoves(board, curPos);
+                    for (ChessMove move : potentialMoves) {
+                        if (move.getEndPosition().equals(kingPosition)) return true;
+                    }
+                }
+
+            }
+        }
+        return false;
     }
 
     /**
