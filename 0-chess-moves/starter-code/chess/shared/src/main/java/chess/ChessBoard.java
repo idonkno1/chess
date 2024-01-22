@@ -9,10 +9,15 @@ import java.util.Arrays;
  * signature of the existing methods.
  */
 public class ChessBoard {
-    private ChessPiece[][] board = new ChessPiece[8][8];
+    private final ChessPiece[][] board;
 
     public ChessBoard() {
+        board = new ChessPiece[8][8];
 
+    }
+
+    public ChessBoard(ChessBoard copy) {
+        board = Arrays.copyOf(copy.board, copy.board.length);
     }
 
     /**
