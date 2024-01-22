@@ -27,7 +27,28 @@ public class ChessPiece {
         BISHOP,
         KNIGHT,
         ROOK,
-        PAWN
+        PAWN;
+
+    }
+
+    public String getPieceSymbol() {
+        switch (pieceType) {
+            case PAWN:
+                return (teamColor == ChessGame.TeamColor.WHITE) ? "P" : "p";
+            case KNIGHT:
+                return (teamColor == ChessGame.TeamColor.WHITE) ? "N" : "n";
+            case BISHOP:
+                return (teamColor == ChessGame.TeamColor.WHITE) ? "B" : "b";
+            case ROOK:
+                return (teamColor == ChessGame.TeamColor.WHITE) ? "R" : "r";
+            case QUEEN:
+                return (teamColor == ChessGame.TeamColor.WHITE) ? "Q" : "q";
+            case KING:
+                return (teamColor == ChessGame.TeamColor.WHITE) ? "K" : "k";
+            default:
+                return " ";
+        }
+
     }
 
     /**
@@ -37,6 +58,7 @@ public class ChessPiece {
 
         return teamColor;
     }
+
 
     /**
      * @return which type of chess piece this piece is
@@ -96,13 +118,13 @@ public class ChessPiece {
                         if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
                             ChessPiece blockingPiece = board.getPiece(new ChessPosition(nextCol, nextCol));
 
-                            if (blockingPiece != null && move[0] == 1) { // move up one space if not blocked
+                            if (blockingPiece == null && move[0] == 1) { // move up one space if not blocked
                                 if (currentRow + movementDirection == promotionRow) {
                                     moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, nextCol), PieceType.QUEEN));
                                     moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, nextCol), PieceType.ROOK));
                                     moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, nextCol), PieceType.BISHOP));
                                     moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, nextCol), PieceType.KNIGHT));
-                                }
+                                } else moves.add(new ChessMove(myPosition, new ChessPosition(nextRow, nextCol), null));
                             }
                             // move up two spaces if not blocked
                             if (move[0] == 2 && currentRow == startingRow) {

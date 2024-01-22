@@ -37,6 +37,7 @@ public class ChessMove {
         return endPosition;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

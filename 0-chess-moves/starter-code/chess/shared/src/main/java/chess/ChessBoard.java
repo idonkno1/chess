@@ -9,10 +9,9 @@ import java.util.Arrays;
  * signature of the existing methods.
  */
 public class ChessBoard {
-    private final ChessPiece[][] board;
+    private ChessPiece[][] board = new ChessPiece[8][8];
 
     public ChessBoard() {
-        board = new ChessPiece[8][8];
 
     }
 
@@ -28,8 +27,24 @@ public class ChessBoard {
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
 
-        board[position.getRow()][position.getColumn()] = piece;
+        board[(position.getRow() - 1)][(position.getColumn() - 1)] = piece;
+        printBoard(board);
     }
+
+    private void printBoard(ChessPiece[][] board) {
+        for (int row = 7; row >= 0; row--) {
+            for (int col = 0; col < 8; col++) {
+                if (board[row][col] == null) {
+                    System.out.print("| ");
+                } else {
+                    System.out.printf("|%s", board[row][col].getPieceSymbol());
+                }
+            }
+            System.out.println("|");
+        }
+        System.out.println();
+    }
+
 
     /**
      * Gets a chess piece on the chessboard
@@ -39,7 +54,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return board[position.getRow()][position.getColumn()];
+        return board[(position.getRow() - 1)][(position.getColumn() - 1)];
     }
 
     /**
@@ -78,8 +93,8 @@ public class ChessBoard {
     }
 
     private void emptyBoard() {
-        for (var row = 1; row <= 8; row++)
-            for (var col = 1; col <= 8; col++) {
+        for (var row = 0; row < 8; row++)
+            for (var col = 0; col < 8; col++) {
                 board[row][col] = null;
             }
     }
