@@ -1,9 +1,6 @@
 package chess;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Represents a single chess piece
@@ -57,8 +54,8 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         var moves = new HashSet<ChessMove>();
-        int row = myPosition.getRow();
-        int col = myPosition.getColumn();
+        int currentRow = myPosition.getRow();
+        int currentCol = myPosition.getColumn();
 
         switch (pieceType) {
             case PAWN:
@@ -69,51 +66,137 @@ public class ChessPiece {
                 int[][] pawnMoves = {{1, 0}, {2, 0}, {1, -1}, {1, 1}}; //possible pawn moves, move up 1 or 2 spaces, take left or right
 
                 for (int[] move : pawnMoves) {
-                    int newRow = row + move[0] * movementDirection; // moves up/down dep on direction
-                    int newCol = col + move[1]; // stays in same col unless taking a piece
+                    int nextRow = currentRow + move[0] * movementDirection; // moves up/down dep on direction
+                    int nextCol = currentCol + move[1]; // stays in same col unless taking a piece
 
-                    if (move[0] == 2 && row != startingRow) {
+                    if (move[0] == 2 && currentCol != startingRow) {
                         continue; // only move twice in starting row
                     }
 
                     if (move[1] != 0) {
                         // pawn is capturing a piece
-                        if (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
-                            ChessPiece targetPiece = board.getPiece(new ChessPosition(newRow, newCol));
+                        if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
+                            ChessPiece targetPiece = board.getPiece(new ChessPosition(nextRow, nextCol));
 
                             if (targetPiece != null && targetPiece.getTeamColor() != teamColor) {
-                                if (row + movementDirection == promotionRow) { // if new move is in promotion row, promotion can occur
-                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, newCol), PieceType.QUEEN));
-                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, newCol), PieceType.ROOK));
-                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, newCol), PieceType.BISHOP));
-                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, newCol), PieceType.KNIGHT));
+                                if (currentRow + movementDirection == promotionRow) { // if new move is in promotion row, promotion can occur
+                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, nextCol), PieceType.QUEEN));
+                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, nextCol), PieceType.ROOK));
+                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, nextCol), PieceType.BISHOP));
+                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, nextCol), PieceType.KNIGHT));
                                 }
                                 // if capture occurs outside of promotion row
                                 else
-                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, newCol), null));
+                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, nextCol), null));
                             }
                         }
 
                     } else {
                         // pawn moving forward
-                        if (newRow >= 1 && newRow <= 8 && newCol >= 1 && newCol <= 8) {
-                            ChessPiece blockingPiece = board.getPiece(new ChessPosition(newRow, newCol));
+                        if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
+                            ChessPiece blockingPiece = board.getPiece(new ChessPosition(nextCol, nextCol));
 
-                            if (blockingPiece != null && move[0] == 1) {
-                                if (row + movementDirection == promotionRow) {
-
-
+                            if (blockingPiece != null && move[0] == 1) { // move up one space if not blocked
+                                if (currentRow + movementDirection == promotionRow) {
+                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, nextCol), PieceType.QUEEN));
+                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, nextCol), PieceType.ROOK));
+                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, nextCol), PieceType.BISHOP));
+                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, nextCol), PieceType.KNIGHT));
+                                }
+                            }
+                            // move up two spaces if not blocked
+                            if (move[0] == 2 && currentRow == startingRow) {
+                                ChessPiece blockingPiece2 = board.getPiece(new ChessPosition(currentRow + movementDirection, currentCol));
+                                if (blockingPiece == null && blockingPiece2 == null) {
+                                    moves.add(new ChessMove(myPosition, new ChessPosition(nextRow, nextCol), null));
                                 }
                             }
                         }
-
-
                     }
                 }
+                break;
 
+            case KNIGHT:
+                int[][] knightMoves = {{2, -1}, {2, 1}, {-2, -1}, {-2, 1}, {1, -2}, {1, 2}, {-1, -2}, {-1, 2}}; // multiple l shapes movements
 
+                for (int[] move : knightMoves) {
+                    int nextRow = currentRow + move[0];
+                    int nextCol = currentCol + move[1];
+
+                    if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
+                        ChessPiece targetPiece = board.getPiece(new ChessPosition(nextRow, nextCol));
+
+                        if (targetPiece == null || targetPiece.getTeamColor() != teamColor) {
+                            // either move to empty space or capture enemy piece in said space
+                            moves.add((new ChessMove(myPosition, new ChessPosition(nextRow, nextCol), null)));
+                        }
+                    }
+                }
+            case ROOK:
+                int[][] rookMoves = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+                continuousMoves(moves, board, myPosition, rookMoves);
+
+                break;
+            case BISHOP:
+                int[][] bishopMoves = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+                continuousMoves(moves, board, myPosition, bishopMoves);
+                break;
+
+            case QUEEN:
+                int[][] queenMoves = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+                continuousMoves(moves, board, myPosition, queenMoves);
+                break;
+
+            case KING:
+                int[][] kingMoves = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}; // multiple l shapes movements
+
+                for (int[] move : kingMoves) {
+                    int nextRow = currentRow + move[0];
+                    int nextCol = currentCol + move[1];
+
+                    if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
+                        ChessPiece targetPiece = board.getPiece(new ChessPosition(nextRow, nextCol));
+
+                        if (targetPiece == null || targetPiece.getTeamColor() != teamColor) {
+                            // either move to empty space or capture enemy piece in said space
+                            moves.add((new ChessMove(myPosition, new ChessPosition(nextRow, nextCol), null)));
+                        }
+                    }
+                }
+                break;
+
+            default:
+                throw new IllegalArgumentException("Invalid piece type: " + pieceType);
         }
 
         return moves;
+    }
+
+    private void continuousMoves(HashSet<ChessMove> moves, ChessBoard board, ChessPosition myPosition, int[][] movements) {
+        int currentRow = myPosition.getRow();
+        int currentCol = myPosition.getColumn();
+
+        for (int[] move : movements) {
+            int nextRow = currentRow;
+            int nextCol = currentCol;
+
+            while (true) {
+                nextRow += move[0];
+                nextCol += move[1];
+
+                if (nextRow < 1 || nextRow > 8 || nextCol < 1 || nextCol > 8) break; // outside of board boundaries stop
+
+                ChessPiece targetPiece = board.getPiece(new ChessPosition(nextRow, nextCol));
+
+                if (targetPiece == null) {
+                    moves.add(new ChessMove(myPosition, new ChessPosition(nextRow, nextCol), null));
+                } else {
+                    if (targetPiece.getTeamColor() != teamColor) {
+                        moves.add(new ChessMove(myPosition, new ChessPosition(nextRow, nextCol), null));
+                    }
+                    break; // cant keep moving if capturing a piece
+                }
+            }
+        }
     }
 }
