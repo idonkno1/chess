@@ -8,7 +8,7 @@ import java.util.Arrays;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessBoard {
+public class ChessBoard { //deep everything
     private ChessPiece[][] board = new ChessPiece[8][8];
 
     public ChessBoard() {
@@ -28,7 +28,7 @@ public class ChessBoard {
     public void addPiece(ChessPosition position, ChessPiece piece) {
 
         board[(position.getRow() - 1)][(position.getColumn() - 1)] = piece;
-        printBoard(board);
+        //printBoard(board);
     }
 
     private void printBoard(ChessPiece[][] board) {
@@ -62,7 +62,7 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        emptyBoard();
+        //emptyBoard();
 
         // set up white
         addPiece(new ChessPosition(1, 1), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
@@ -90,6 +90,27 @@ public class ChessBoard {
             addPiece(new ChessPosition(7, col), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
         }
 
+    }
+
+    @Override
+    public String toString() {
+        return "ChessBoard{" +
+                "board=" + Arrays.deepToString(board) +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessBoard that = (ChessBoard) o;
+        return Arrays.deepEquals(board, that.board);
+    }
+
+    // deep everything
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(board);
     }
 
     private void emptyBoard() {

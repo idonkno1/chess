@@ -59,6 +59,18 @@ public class ChessPiece {
         return teamColor;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessPiece piece = (ChessPiece) o;
+        return teamColor == piece.teamColor && pieceType == piece.pieceType;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(teamColor, pieceType);
+    }
 
     /**
      * @return which type of chess piece this piece is
@@ -91,7 +103,7 @@ public class ChessPiece {
                     int nextRow = currentRow + move[0] * movementDirection; // moves up/down dep on direction
                     int nextCol = currentCol + move[1]; // stays in same col unless taking a piece
 
-                    if (move[0] == 2 && currentCol != startingRow) {
+                    if (move[0] == 2 && currentRow != startingRow) {
                         continue; // only move twice in starting row
                     }
 
@@ -109,14 +121,14 @@ public class ChessPiece {
                                 }
                                 // if capture occurs outside of promotion row
                                 else
-                                    moves.add(new ChessMove(myPosition, new ChessPosition(promotionRow, nextCol), null));
+                                    moves.add(new ChessMove(myPosition, new ChessPosition(nextRow, nextCol), null));
                             }
                         }
 
                     } else {
                         // pawn moving forward
-                        if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
-                            ChessPiece blockingPiece = board.getPiece(new ChessPosition(nextCol, nextCol));
+                        if (nextRow >= 1 && nextRow <= 8 && nextCol == currentCol) {
+                            ChessPiece blockingPiece = board.getPiece(new ChessPosition(nextRow, nextCol));
 
                             if (blockingPiece == null && move[0] == 1) { // move up one space if not blocked
                                 if (currentRow + movementDirection == promotionRow) {
@@ -154,6 +166,7 @@ public class ChessPiece {
                         }
                     }
                 }
+                break;
             case ROOK:
                 int[][] rookMoves = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
                 continuousMoves(moves, board, myPosition, rookMoves);
@@ -192,6 +205,14 @@ public class ChessPiece {
         }
 
         return moves;
+    }
+
+    @Override
+    public String toString() {
+        return "ChessPiece{" +
+                "teamColor=" + teamColor +
+                ", pieceType=" + pieceType +
+                '}';
     }
 
     private void continuousMoves(HashSet<ChessMove> moves, ChessBoard board, ChessPosition myPosition, int[][] movements) {

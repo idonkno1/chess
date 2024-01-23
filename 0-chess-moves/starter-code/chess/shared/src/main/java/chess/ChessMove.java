@@ -37,6 +37,14 @@ public class ChessMove {
         return endPosition;
     }
 
+    @Override
+    public String toString() {
+        return "ChessMove{" +
+                "startPosition=" + startPosition +
+                ", endPosition=" + endPosition +
+                ", promotionPiece=" + promotionPiece +
+                '}';
+    }
 
     @Override
     public boolean equals(Object o) {
