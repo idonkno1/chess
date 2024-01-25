@@ -127,7 +127,7 @@ public class ChessPiece {
 
                     } else {
                         // pawn moving forward
-                        if (nextRow >= 1 && nextRow <= 8 && nextCol == currentCol) {
+                        if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
                             ChessPiece blockingPiece = board.getPiece(new ChessPosition(nextRow, nextCol));
 
                             if (blockingPiece == null && move[0] == 1) { // move up one space if not blocked
@@ -153,19 +153,8 @@ public class ChessPiece {
             case KNIGHT:
                 int[][] knightMoves = {{2, -1}, {2, 1}, {-2, -1}, {-2, 1}, {1, -2}, {1, 2}, {-1, -2}, {-1, 2}}; // multiple l shapes movements
 
-                for (int[] move : knightMoves) {
-                    int nextRow = currentRow + move[0];
-                    int nextCol = currentCol + move[1];
+                oneMove(moves, board, myPosition, knightMoves);
 
-                    if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
-                        ChessPiece targetPiece = board.getPiece(new ChessPosition(nextRow, nextCol));
-
-                        if (targetPiece == null || targetPiece.getTeamColor() != teamColor) {
-                            // either move to empty space or capture enemy piece in said space
-                            moves.add((new ChessMove(myPosition, new ChessPosition(nextRow, nextCol), null)));
-                        }
-                    }
-                }
                 break;
             case ROOK:
                 int[][] rookMoves = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
@@ -185,19 +174,7 @@ public class ChessPiece {
             case KING:
                 int[][] kingMoves = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}; // multiple l shapes movements
 
-                for (int[] move : kingMoves) {
-                    int nextRow = currentRow + move[0];
-                    int nextCol = currentCol + move[1];
-
-                    if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
-                        ChessPiece targetPiece = board.getPiece(new ChessPosition(nextRow, nextCol));
-
-                        if (targetPiece == null || targetPiece.getTeamColor() != teamColor) {
-                            // either move to empty space or capture enemy piece in said space
-                            moves.add((new ChessMove(myPosition, new ChessPosition(nextRow, nextCol), null)));
-                        }
-                    }
-                }
+                oneMove(moves, board, myPosition, kingMoves);
                 break;
 
             default:
@@ -207,6 +184,25 @@ public class ChessPiece {
         return moves;
     }
 
+    private void oneMove(HashSet<ChessMove> moves, ChessBoard board, ChessPosition myPosition, int[][] movements) {
+        int currentRow = myPosition.getRow();
+        int currentCol = myPosition.getColumn();
+
+        for (int[] move : movements) {
+            int nextRow = currentRow + move[0];
+            int nextCol = currentCol + move[1];
+
+            if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
+                ChessPiece targetPiece = board.getPiece(new ChessPosition(nextRow, nextCol));
+
+                if (targetPiece == null || targetPiece.getTeamColor() != teamColor) {
+                    // either move to empty space or capture enemy piece in said space
+                    moves.add((new ChessMove(myPosition, new ChessPosition(nextRow, nextCol), null)));
+                }
+            }
+        }
+    }
+
     @Override
     public String toString() {
         return "ChessPiece{" +
@@ -214,6 +210,7 @@ public class ChessPiece {
                 ", pieceType=" + pieceType +
                 '}';
     }
+
 
     private void continuousMoves(HashSet<ChessMove> moves, ChessBoard board, ChessPosition myPosition, int[][] movements) {
         int currentRow = myPosition.getRow();

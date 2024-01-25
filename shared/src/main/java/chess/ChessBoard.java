@@ -14,10 +14,8 @@ public class ChessBoard { //deep everything
     public ChessBoard() {
 
     }
-
-    public ChessBoard(ChessBoard copy) {
-        board = Arrays.copyOf(copy.board, copy.board.length);
-    }
+    // copy the board
+    public ChessBoard(ChessBoard copy) {board = Arrays.copyOf(copy.board, copy.board.length);}
 
     /**
      * Adds a chess piece to the chessboard
@@ -28,21 +26,7 @@ public class ChessBoard { //deep everything
     public void addPiece(ChessPosition position, ChessPiece piece) {
 
         board[(position.getRow() - 1)][(position.getColumn() - 1)] = piece;
-        //printBoard(board);
-    }
 
-    private void printBoard(ChessPiece[][] board) {
-        for (int row = 7; row >= 0; row--) {
-            for (int col = 0; col < 8; col++) {
-                if (board[row][col] == null) {
-                    System.out.print("| ");
-                } else {
-                    System.out.printf("|%s", board[row][col].getPieceSymbol());
-                }
-            }
-            System.out.println("|");
-        }
-        System.out.println();
     }
 
 
@@ -113,10 +97,5 @@ public class ChessBoard { //deep everything
         return Arrays.deepHashCode(board);
     }
 
-    private void emptyBoard() {
-        for (var row = 0; row < 8; row++)
-            for (var col = 0; col < 8; col++) {
-                board[row][col] = null;
-            }
-    }
+
 }
