@@ -2,6 +2,7 @@ package chess;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -17,7 +18,7 @@ public class ChessGame {
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
         board = new ChessBoard();
-        board.resetBoard();
+
 
     }
 
@@ -59,7 +60,7 @@ public class ChessGame {
         }
         Collection<ChessMove> allMoves = piece.pieceMoves(board, startPosition);
         Collection<ChessMove> validMoves = new HashSet<ChessMove>();
-        for (ChessMove move : validMoves) {
+        for (ChessMove move : allMoves) {
             ChessPiece destinationPiece = board.getPiece(move.getEndPosition());
             board.addPiece(move.getEndPosition(), piece);
 
@@ -154,8 +155,10 @@ public class ChessGame {
             for (var col = 1; col <= 8; col++) {
                 ChessPosition curPos = new ChessPosition(row, col);
                 ChessPiece curPiece = board.getPiece(curPos);
-                if (curPiece.getPieceType() == ChessPiece.PieceType.KING && curPiece.getTeamColor() == teamColor) {
-                    return curPos;
+                if(curPiece != null){
+                    if (curPiece.getPieceType() == ChessPiece.PieceType.KING && curPiece.getTeamColor() == teamColor) {
+                        return curPos;
+                    }
                 }
 
             }
@@ -178,9 +181,9 @@ public class ChessGame {
                 ChessPiece curPiece = board.getPiece(curPos);
 
                 if (curPiece != null && curPiece.getTeamColor() == teamColor) {
-                    Collection<ChessMove> potenialMoves = curPiece.pieceMoves(board, curPos);
+                    Collection<ChessMove> potentialMoves = curPiece.pieceMoves(board, curPos);
 
-                    for (ChessMove move : potenialMoves) {
+                    for (ChessMove move : potentialMoves) {
                         var tempBoard = new ChessBoard(board);
                         tempBoard.addPiece(move.getEndPosition(), curPiece);
                         tempBoard.addPiece(move.getStartPosition(), null);
@@ -212,9 +215,9 @@ public class ChessGame {
                 ChessPiece curPiece = board.getPiece(curPos);
 
                 if (curPiece != null && curPiece.getTeamColor() == teamColor) {
-                    Collection<ChessMove> potenialMoves = curPiece.pieceMoves(board, curPos);
+                    Collection<ChessMove> potentialMoves = curPiece.pieceMoves(board, curPos);
 
-                    for (ChessMove move : potenialMoves) {
+                    for (ChessMove move : potentialMoves) {
                         if (isLegalMove(move)) return false;
                     }
                 }
@@ -270,5 +273,26 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return board;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessGame chessGame = (ChessGame) o;
+        return teamTurn == chessGame.teamTurn && Objects.equals(board, chessGame.board);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(teamTurn, board);
+    }
+
+    @Override
+    public String toString() {
+        return "ChessGame{" +
+                "teamTurn=" + teamTurn +
+                ", board=" + board +
+                '}';
     }
 }
