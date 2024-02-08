@@ -21,6 +21,12 @@ public class ChessPiece {
 
     }
 
+    public ChessPiece(ChessPiece originalPiece, ChessGame.TeamColor teamColor, PieceType pieceType) {
+
+        this.teamColor = teamColor;
+        this.pieceType = pieceType;
+    }
+
     /**
      * The various different chess piece options
      */

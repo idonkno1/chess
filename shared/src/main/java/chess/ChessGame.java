@@ -63,13 +63,14 @@ public class ChessGame {
         for (ChessMove move : allMoves) {
             ChessPiece destinationPiece = board.getPiece(move.getEndPosition());
             board.addPiece(move.getEndPosition(), piece);
+            board.addPiece(move.getStartPosition(), null);
 
             if (!isInCheck(piece.getTeamColor())) {
                 validMoves.add(move);
             }
+            board.addPiece(move.getEndPosition(), null);
             if (destinationPiece != null) {
                 board.addPiece(move.getEndPosition(), destinationPiece);
-
             }
             board.addPiece(startPosition, piece);
 
@@ -94,19 +95,21 @@ public class ChessGame {
         if (piece.getTeamColor() != teamTurn) {
             throw new InvalidMoveException("Invalid Move");
         }
-
-        if (destinationPiece.getTeamColor() == piece.getTeamColor()) {
-            throw new InvalidMoveException("Invalid Move");
+        if (destinationPiece != null){
+            if (destinationPiece.getTeamColor() == piece.getTeamColor()) {
+                throw new InvalidMoveException("Invalid Move");
+            }
         }
 
         var tempBoard = new ChessBoard(board);
         tempBoard.addPiece(move.getEndPosition(), piece);
+        tempBoard.addPiece(move.getStartPosition(), null);
 
         if (isInCheckOnBoard(piece.getTeamColor(), tempBoard)) {
-            throw new InvalidMoveException("Invalid move King in Check");
-        }
+            throw new InvalidMoveException("Invalid move King in Check");}
 
         board.addPiece(move.getEndPosition(), piece);
+        board.addPiece(move.getStartPosition(), null);
 
         if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
             int promotionRow = (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? 8 : 1;
@@ -123,6 +126,7 @@ public class ChessGame {
         }
         teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
     }
+
 
     /**
      * Determines if the given team is in check
@@ -238,17 +242,33 @@ public class ChessGame {
     }
 
     private boolean isInCheckOnBoard(TeamColor teamColor, ChessBoard tempBoard) {
-        ChessPosition kingPosition = findKingLocation(teamColor);
+        ChessPosition kingPosition = null;
+        for (var row = 1; row <= 8; row++) {
+            for (var col = 1; col <= 8; col++) {
+                ChessPosition curPos = new ChessPosition(row, col);
+                ChessPiece curPiece = tempBoard.getPiece(curPos);
+                if(curPiece != null){
+                    if (curPiece.getPieceType() == ChessPiece.PieceType.KING && curPiece.getTeamColor() == teamColor) {
+                         kingPosition = curPos;
+                         break;
+                    }
+                }
+                if(kingPosition != null) break;
+            }
+        }
+
 
         for (var row = 1; row <= 8; row++) {
             for (var col = 1; col <= 8; col++) {
                 ChessPosition curPos = new ChessPosition(row, col);
-                ChessPiece curPiece = board.getPiece(curPos);
+                ChessPiece curPiece = tempBoard.getPiece(curPos);
 
                 if (curPiece != null && curPiece.getTeamColor() != teamColor) {
                     Collection<ChessMove> potentialMoves = curPiece.pieceMoves(board, curPos);
                     for (ChessMove move : potentialMoves) {
-                        if (move.getEndPosition().equals(kingPosition)) return true;
+                        if (move.getEndPosition().equals(kingPosition)) {
+                            return true;
+                        }
                     }
                 }
 

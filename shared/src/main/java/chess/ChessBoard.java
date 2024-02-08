@@ -17,7 +17,17 @@ public class ChessBoard {
     }
 
     public ChessBoard(ChessBoard board) {
-        Arrays.copyOf(board.board, board.board.length);
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                ChessPiece originalPiece = board.board[row][col];
+                if (originalPiece != null) {
+
+                    this.board[row][col] = new ChessPiece(originalPiece, originalPiece.getTeamColor(), originalPiece.getPieceType());
+                } else {
+                    this.board[row][col] = null;
+                }
+            }
+        }
     }
 
     /**
