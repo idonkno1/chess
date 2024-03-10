@@ -46,7 +46,19 @@ public class Server {
         return Spark.port();
     }
 
+    private Object Clear(Request req, Response res) throws DataAccessException {
+        clearService.clearDatabase();
+        res.status(200);
+        return "";
+    }
+    private Object CreateGame(Request req, Response res) throws DataAccessException {
+        String authToken = req.headers("Authorization");
+        var reqGame = new Gson().fromJson(req.body(), GameDAO.class);
 
+        GameDAO game = createGameService.createGame(authToken, reqGame);
+        res.type("application.json");
+        return new Gson().toJson(Map.of("gameID", game.getGameID()));
+    }
     private Object JoinGame(Request req, Response res) throws DataAccessException {
         String authToken = req.headers("Authorization");
         if (authToken == null || authToken.isEmpty()){
@@ -64,44 +76,12 @@ public class Server {
         res.status(200);
         return "";
     }
-    private Object CreateGame(Request req, Response res) throws DataAccessException {
-        String authToken = req.headers("Authorization");
-        if (authToken == null || authToken.isEmpty()){
-            throw new DataAccessException("Error: unauthorized - missing authToken");
-        }
-
-        var reqGame = new Gson().fromJson(req.body(), GameDAO.class);
-        String gameName = reqGame.getGameName();
-        if (gameName == null || gameName.isEmpty()){
-            throw new DataAccessException("Error: bad request - gameName is required");
-        }
-
-        GameDAO game = createGameService.createGame(authToken, reqGame);
-
-        res.type("application.json");
-        return new Gson().toJson(Map.of("gameID", game.getGameID()));
-    }
     private Object ListGames(Request req, Response res) throws DataAccessException {
-
         String authToken = req.headers("Authorization");
-        if (authToken == null || authToken.isEmpty()) {
-            throw new DataAccessException("Error: unauthorized - missing or invalid authToken");
-        }
 
         Collection<GameDAO> games = listGamesService.listGames(authToken);
-
         res.type("application/json");
         return new Gson().toJson(Map.of("games", games));
-    }
-    private Object Logout(Request req, Response res) throws DataAccessException {
-        String authToken = req.headers("Authorization");
-        if (authToken == null || authToken.isEmpty()){
-            throw new DataAccessException("Error: unauthorized - missing authToken");
-        }
-
-        logoutService.logoutUser(authToken);
-        res.status(200);
-        return "";
     }
     private Object Login(Request req, Response res) throws DataAccessException {
         var loginInfo = new Gson().fromJson(req.body(), UserDAO.class);
@@ -111,6 +91,13 @@ public class Server {
         res.type("application/json");
         return new Gson().toJson(userSession);
     }
+    private Object Logout(Request req, Response res) throws DataAccessException {
+        String authToken = req.headers("Authorization");
+
+        logoutService.logoutUser(authToken);
+        res.status(200);
+        return "";
+    }
     private Object Register(Request req, Response res) throws DataAccessException {
         var newUser = new Gson().fromJson(req.body(), UserDAO.class);
 
@@ -118,11 +105,6 @@ public class Server {
         res.status(200);
         res.type("application/json");
         return new Gson().toJson(registeredUser);
-    }
-    private Object Clear(Request req, Response res) throws DataAccessException {
-        clearService.clearDatabase();
-        res.status(200);
-        return "";
     }
     public void stop() {
         Spark.stop();
