@@ -1,19 +1,19 @@
 package service;
 
+import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
-import dataAccess.MemoryDataAccess;
 import model.GameDAO;
 
 import java.util.Collection;
 
 public class ListGamesService {
-    public ListGamesService(MemoryDataAccess memoryDataAccess) {
-    }
+    private final DataAccess dataAccess;
+    public ListGamesService(DataAccess dataAccess) {this.dataAccess = dataAccess;}
 
-    public static Collection<GameDAO> listGames(String authToken) throws DataAccessException {
-        if(MemoryDataAccess.isValidAuth(authToken)){
+    public Collection<GameDAO> listGames(String authToken) throws DataAccessException {
+        if(dataAccess.isValidAuth(authToken)){
             throw new DataAccessException("Error: unauthorized - invalid or expired authToken");
         }
-        return MemoryDataAccess.listGames();
+        return dataAccess.listGames();
     }
 }

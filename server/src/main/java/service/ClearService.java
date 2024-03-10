@@ -3,15 +3,13 @@ package service;
 import dataAccess.*;
 
 public class ClearService {
-    private static MemoryDataAccess memoryDataAccess;
+    private final DataAccess dataAccess;
 
-    public ClearService(MemoryDataAccess memoryDataAccess) {
-        this.memoryDataAccess = memoryDataAccess;
-    }
+    public ClearService(DataAccess dataAccess) {this.dataAccess = dataAccess;}
 
-    public static void clearDatabase() throws DataAccessException {
+    public void clearDatabase() throws DataAccessException {
         try{
-            memoryDataAccess.clearDAO();
+            dataAccess.clearDAO();
         }catch (Exception e){
             throw new DataAccessException("Error clearing database");
         }

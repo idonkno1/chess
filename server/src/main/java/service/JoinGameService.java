@@ -1,11 +1,11 @@
 package service;
 
-import dataAccess.MemoryDataAccess;
+import dataAccess.DataAccess;
 import model.GameDAO;
 
 public class JoinGameService {
-    public JoinGameService(MemoryDataAccess memoryDataAccess) {
-    }
+    private final DataAccess dataAccess;
+    public JoinGameService(DataAccess dataAccess) {this.dataAccess = dataAccess;}
 
     public boolean joinGame(GameDAO game) {
         return false;

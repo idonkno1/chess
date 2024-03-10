@@ -1,13 +1,13 @@
 package server;
 
 import com.google.gson.Gson;
-import dataAccess.DataAccessException;
-import model.GameDAO;
-import model.UserDAO;
-import spark.Request;
-import spark.Response;
-import spark.Spark;
+import dataAccess.*;
+import exception.ResponseException;
+import model.*;
+import spark.*;
+
 import service.*;
+
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,15 +15,14 @@ import java.util.Map;
 
 public class Server {
 
-    private dataAccess.MemoryDataAccess MemoryDataAccess;
-    private final ClearService clearService = new ClearService(MemoryDataAccess);
-    private final CreateGameService createGameService = new CreateGameService(MemoryDataAccess);
-    private final JoinGameService joinGameService = new JoinGameService(MemoryDataAccess);
-    private final ListGamesService listGamesService = new ListGamesService(MemoryDataAccess);
-    private final LoginService loginService = new LoginService(MemoryDataAccess);
-    private final LogoutService logoutService = new LogoutService(MemoryDataAccess);
-    private final RegisterService registerService = new RegisterService(MemoryDataAccess);
-
+    private final dataAccess.DataAccess dataAccess = new MemoryDataAccess();
+    private final ClearService clearService = new ClearService(dataAccess);
+    private final CreateGameService createGameService = new CreateGameService(dataAccess);
+    private final JoinGameService joinGameService = new JoinGameService(dataAccess);
+    private final ListGamesService listGamesService = new ListGamesService(dataAccess);
+    private final LoginService loginService = new LoginService(dataAccess);
+    private final LogoutService logoutService = new LogoutService(dataAccess);
+    private final RegisterService registerService = new RegisterService(dataAccess);
 
     public Server() {
 
@@ -43,11 +42,14 @@ public class Server {
         Spark.get("/game", this::ListGames); //list games
         Spark.post("/game", this::CreateGame); //create game
         Spark.put("/game", this::JoinGame); //join game
+        Spark.exception(ResponseException.class, this::exceptionHandler);
 
 
         Spark.awaitInitialization();
         return Spark.port();
     }
+
+    private void exceptionHandler(ResponseException ex, Request req, Response res) {res.status(StatusCode());}
 
     private Object JoinGame(Request req, Response res) throws DataAccessException {
         String authToken = req.headers("Authorization");
