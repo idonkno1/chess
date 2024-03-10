@@ -53,7 +53,7 @@ public class Server {
     }
     private Object CreateGame(Request req, Response res) throws DataAccessException {
         String authToken = req.headers("Authorization");
-        var reqGame = new Gson().fromJson(req.body(), GameDAO.class);
+        var reqGame = new Gson().fromJson(req.body(), String.class);
 
         GameDAO game = createGameService.createGame(authToken, reqGame);
         res.type("application.json");
@@ -61,12 +61,9 @@ public class Server {
     }
     private Object JoinGame(Request req, Response res) throws DataAccessException {
         String authToken = req.headers("Authorization");
-        if (authToken == null || authToken.isEmpty()){
-            throw new DataAccessException("Error: unauthorized - missing authToken");
-        }
         var joinReq = new Gson().fromJson(req.body(), GameDAO.class);
 
-        boolean success = joinGameService.joinGame(joinReq);
+        boolean success = joinGameService.joinGame(authToken, joinReq);
 
         if(!success){
             res.status(400);

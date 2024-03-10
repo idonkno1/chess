@@ -31,10 +31,10 @@ public class CreateGameServiceTest {
         // Setup - create an auth token and a game
         String username = "testUser";
         AuthDAO authToken = memoryDataAccess.createAuthToken(username);
-        GameDAO gameToCreate = new GameDAO(0, "whitePlayer", "blackPlayer", "Test Game", null);
+        String game = "game";
 
         // Check if the auth token is valid
-        GameDAO createdGame = createGameService.createGame(authToken.getAuthToken(), gameToCreate);
+        GameDAO createdGame = createGameService.createGame(authToken.getAuthToken(), game);
 
         // Verify
         assertNotNull(createdGame, "Created game should not be null.");
@@ -45,10 +45,9 @@ public class CreateGameServiceTest {
     public void createGame_FailsWithInvalidAuthToken() {
         // Setup - an invalid auth token and a game
         String invalidAuthToken = "invalidToken";
-        GameDAO gameToCreate = new GameDAO(0, "whitePlayer", "blackPlayer", "Test Game", null);
-
+        String game = "game";
         // Execute & Verify
-        assertThrows(DataAccessException.class, () -> createGameService.createGame(invalidAuthToken, gameToCreate), "Should throw an exception for invalid or expired authToken.");
+        assertThrows(DataAccessException.class, () -> createGameService.createGame(invalidAuthToken, game), "Should throw an exception for invalid or expired authToken.");
     }
 
     @Test
@@ -56,8 +55,7 @@ public class CreateGameServiceTest {
         // Setup - create a valid auth token and an invalid game (empty game name)
         String username = "testUser";
         AuthDAO authToken = memoryDataAccess.createAuthToken(username);
-        GameDAO invalidGame = new GameDAO(0, "whitePlayer", "blackPlayer", "", null); // Empty game name
-
+        String invalidGame = "";
         // Execute & Verify
         assertThrows(DataAccessException.class, () -> createGameService.createGame(authToken.getAuthToken(), invalidGame), "Should throw an exception for bad request - gameName is required.");
     }

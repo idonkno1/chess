@@ -26,12 +26,11 @@ public class MemoryDataAccess implements DataAccess{
         users.put(user.getUsername(), user);
         return user;
     }
-
     public UserDAO getUser(String username) {return users.get(username);}
 
-    public GameDAO createGame(GameDAO gameDAO){
-        GameDAO game = new GameDAO(nextGameID++, gameDAO.getWhiteUsername(), gameDAO.getBlackUsername(), gameDAO.getGameName(), gameDAO.getGame());
-        games.put(game.getGameID(), gameDAO);
+    public GameDAO createGame(String gameName){
+        GameDAO game = new GameDAO(nextGameID++, null, null, gameName, new ChessGame());
+        games.put(game.getGameID(), game);
         return game;
     }
     public Collection<GameDAO> listGames() {return games.values();}

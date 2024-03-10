@@ -33,8 +33,11 @@ public class ListGameServiceTest {
         // Setup - create an auth token and some games
         String username = "testUser";
         AuthDAO authToken = memoryDataAccess.createAuthToken(username);
-        memoryDataAccess.createGame(new GameDAO(1, "whitePlayer", "blackPlayer", "Test Game 1", null));
-        memoryDataAccess.createGame(new GameDAO(2, "whitePlayer2", "blackPlayer2", "Test Game 2", null));
+        String game1 = "game1";
+        String game2 = "game2";
+
+        memoryDataAccess.createGame(game1);
+        memoryDataAccess.createGame(game2);
 
         //check if the auth token is valid
         Collection<GameDAO> games = listGamesService.listGames(authToken.getAuthToken());

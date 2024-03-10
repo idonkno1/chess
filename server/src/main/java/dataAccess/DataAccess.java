@@ -14,7 +14,7 @@ public interface DataAccess {
 
     UserDAO getUser(String username) throws DataAccessException;
 
-    GameDAO createGame(GameDAO gameDAO) throws DataAccessException;
+    GameDAO createGame(String gameName) throws DataAccessException;
 
     Collection<GameDAO> listGames() throws DataAccessException;
 
