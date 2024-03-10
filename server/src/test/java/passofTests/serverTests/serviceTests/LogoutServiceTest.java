@@ -42,11 +42,11 @@ public class LogoutServiceTest {
     }
 
     @Test
-    public void logoutUser_WithNonexistentTokenDoesNotThrowException() {
+    public void logoutUser_WithNonexistentTokenDoesThrowException() {
         // Setup - a non-existing auth token
         String nonExistentAuthToken = "nonExistentToken";
 
-        // Execute & Verify - attempting to logout with a non-existing token should not throw an exception
-        assertDoesNotThrow(() -> logoutService.logoutUser(nonExistentAuthToken), "Logging out with a non-existent token should not throw an exception.");
+        // Execute & Verify - attempting to logout with a non-existing token should throw an exception
+        assertThrows(DataAccessException.class,() -> logoutService.logoutUser(nonExistentAuthToken), "Logging out with a non-existent token should throw an exception.");
     }
 }

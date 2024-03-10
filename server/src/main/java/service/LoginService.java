@@ -14,7 +14,7 @@ public class LoginService {
         UserDAO user = dataAccess.getUser(username);
 
         if (user == null || !user.getPassword().equals(password)){
-            throw new DataAccessException("Error: unauthorized - invalid username or password");
+            throw new DataAccessException("Error: unauthorized - incorrect username or password");
         }
         String authToken = String.valueOf(dataAccess.createAuthToken(username));
 

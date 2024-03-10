@@ -105,9 +105,7 @@ public class Server {
     }
     private Object Login(Request req, Response res) throws DataAccessException {
         var loginInfo = new Gson().fromJson(req.body(), UserDAO.class);
-        if(loginInfo == null || loginInfo.getUsername().isEmpty() || loginInfo.getPassword().isEmpty()){
-            throw new DataAccessException("Error: bad request - invalid username or password");
-        }
+
         HashMap<String, String> userSession = loginService.loginUser(loginInfo.getUsername(), loginInfo.getPassword());
         res.status(200);
         res.type("application/json");
@@ -115,9 +113,7 @@ public class Server {
     }
     private Object Register(Request req, Response res) throws DataAccessException {
         var newUser = new Gson().fromJson(req.body(), UserDAO.class);
-        if(newUser == null){
-            throw new DataAccessException("Error: bad request - invalid input");
-        }
+
         HashMap<String, String> registeredUser = registerService.createUser(newUser.getUsername(), newUser.getPassword(), newUser.getEmail());
         res.status(200);
         res.type("application/json");

@@ -36,7 +36,7 @@ public class ListGameServiceTest {
         memoryDataAccess.createGame(new GameDAO(1, "whitePlayer", "blackPlayer", "Test Game 1", null));
         memoryDataAccess.createGame(new GameDAO(2, "whitePlayer2", "blackPlayer2", "Test Game 2", null));
 
-        // Fix the logic to correctly check if the auth token is valid
+        //check if the auth token is valid
         Collection<GameDAO> games = listGamesService.listGames(authToken.getAuthToken());
 
         // Verify

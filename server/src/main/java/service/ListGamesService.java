@@ -11,7 +11,7 @@ public class ListGamesService {
     public ListGamesService(DataAccess dataAccess) {this.dataAccess = dataAccess;}
 
     public Collection<GameDAO> listGames(String authToken) throws DataAccessException {
-        if(dataAccess.isValidAuth(authToken)){
+        if(!dataAccess.isValidAuth(authToken)){
             throw new DataAccessException("Error: unauthorized - invalid or expired authToken");
         }
         return dataAccess.listGames();
