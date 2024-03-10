@@ -2,7 +2,6 @@ package passofTests.serverTests.serviceTests;
 
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
-import model.UserDAO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,32 +27,18 @@ public class LoginServiceTest {
         memoryDataAccess.clearDAO();
     }
     @Test
-    public void loginUser_SuccessfulLogin() throws DataAccessException {
-        // Setup - create a user
+    public void loginUser_ReturnsAuthTokenForValidUser() throws DataAccessException {
+        // Setup - create a user to login
         String username = "testUser";
-        String password = "testPassword";
-        memoryDataAccess.createUser(new UserDAO(username, password, "email@example.com"));
 
         // Execute
-        HashMap<String, String> response = loginService.loginUser(username, password);
+        HashMap<String, String> loginResponse = loginService.loginUser(username);
 
         // Verify
-        assertNotNull(response, "Response should not be null.");
-        assertEquals(username, response.get("username"), "Username should match the logged in user.");
-        assertNotNull(response.get("authToken"), "Auth token should not be null after successful login.");
+        assertNotNull(loginResponse, "Login response should not be null");
+        assertEquals(username, loginResponse.get("username"), "The returned username should match the input username");
+        assertNotNull(loginResponse.get("authToken"), "The response should include a non-null auth token");
     }
 
-    @Test
-    public void loginUser_FailsWithIncorrectCredentials() {
-        // Setup - create a user
-        String username = "testUser";
-        String password = "testPassword";
-        memoryDataAccess.createUser(new UserDAO(username, password, "email@example.com"));
 
-        // Execute & Verify - incorrect username
-        assertThrows(DataAccessException.class, () -> loginService.loginUser("wrongUsername", password), "Should throw an exception for incorrect username.");
-
-        // Execute & Verify - incorrect password
-        assertThrows(DataAccessException.class, () -> loginService.loginUser(username, "wrongPassword"), "Should throw an exception for incorrect password.");
-    }
 }

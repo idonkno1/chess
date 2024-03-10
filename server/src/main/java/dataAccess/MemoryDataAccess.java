@@ -1,54 +1,61 @@
 package dataAccess;
 
 import chess.ChessGame;
-import model.AuthDAO;
-import model.GameDAO;
-import model.UserDAO;
+import model.AuthData;
+import model.GameData;
+import model.UserData;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 
 
 public class MemoryDataAccess implements DataAccess{
 
-    private static int nextGameID = 1;
+    private int nextGameID = 1;
 
-    private static final HashMap<String, UserDAO> users = new HashMap<>();
-    private static final HashMap<Integer, GameDAO> games = new HashMap<>();
+    private final HashMap<String, UserData> users = new HashMap<>();
+    private final HashMap<Integer, GameData> games = new HashMap<>();
 
-    private static final HashMap<String, AuthDAO> authTokens = new HashMap<>();
+    private final HashMap<String, AuthData> authTokens = new HashMap<>();
 
     public boolean isValidAuth(String authToken) {return authTokens.containsKey(authToken);}
 
-    public UserDAO createUser(UserDAO userDAO){
-        UserDAO user = new UserDAO(userDAO.getUsername(), userDAO.getPassword(), userDAO.getEmail());
-        users.put(user.getUsername(), user);
+    public UserData createUser(UserData userData){
+        UserData user = new UserData(userData.username(), userData.password(), userData.email());
+        users.put(user.username(), user);
         return user;
     }
-    public UserDAO getUser(String username) {return users.get(username);}
+    public UserData getUser(String username) {return users.get(username);}
 
-    public GameDAO createGame(String gameName){
-        GameDAO game = new GameDAO(nextGameID++, null, null, gameName, new ChessGame());
-        games.put(game.getGameID(), game);
+    public GameData createGame(String gameName){
+        GameData game = new GameData(nextGameID++, null, null, gameName, new ChessGame());
+        games.put(game.gameID(), game);
         return game;
     }
-    public Collection<GameDAO> listGames() {return games.values();}
+    public ArrayList<GameData> listGames() {
+        var gameList = new ArrayList<GameData>();
+        for (var i = 1; i < nextGameID; i++){
+            var game = games.get(i);
+            if(game != null){
+                gameList.add(game);
+            }
+        }
+        return gameList;
+    }
 
     public void updateGame(int gameId, ChessGame gameState) {
-        GameDAO game = games.get(gameId);
-        game.setGame(gameState);
+        GameData game = games.get(gameId);
+        game = game.update(gameState);
         games.put(gameId, game);
     }
-    public GameDAO getGame(int gameID) {return games.get(gameID);}
+    public GameData getGame(int gameID) {return games.get(gameID);}
 
-    public AuthDAO createAuthToken(String username){
+    public AuthData createAuthToken(String username){
         String authToken = UUID.randomUUID().toString();
-        AuthDAO auth = new AuthDAO(authToken, username);
-        authTokens.put(auth.getAuthToken(), auth);
+        AuthData auth = new AuthData(authToken, username);
+        authTokens.put(auth.authToken(), auth);
         return auth;
     }
-    public AuthDAO getAuthToken(AuthDAO authToken){return authTokens.get(authToken.getAuthToken());}
+    public AuthData getAuthToken(String authToken){return authTokens.get(authToken);}
 
     public void deleteAuthToken(String authToken) {
         authTokens.remove(authToken);

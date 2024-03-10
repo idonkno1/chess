@@ -2,16 +2,17 @@ package passofTests.serverTests.serviceTests;
 
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
-import model.AuthDAO;
-import model.GameDAO;
+import model.GameData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import service.ListGamesService;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.HashMap;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ListGameServiceTest {
     private MemoryDataAccess memoryDataAccess;
@@ -29,30 +30,39 @@ public class ListGameServiceTest {
         memoryDataAccess.clearDAO();
     }
     @Test
-    public void listGames_SuccessWithValidAuthToken() throws DataAccessException {
-        // Setup - create an auth token and some games
-        String username = "testUser";
-        AuthDAO authToken = memoryDataAccess.createAuthToken(username);
-        String game1 = "game1";
-        String game2 = "game2";
-
-        memoryDataAccess.createGame(game1);
-        memoryDataAccess.createGame(game2);
-
-        //check if the auth token is valid
-        Collection<GameDAO> games = listGamesService.listGames(authToken.getAuthToken());
+    public void listGames_ReturnsEmptyCollection_IfNoGames() throws DataAccessException {
+        // Execute
+        ArrayList<Object> games = listGamesService.listGames();
 
         // Verify
-        assertNotNull(games, "Games collection should not be null.");
-        assertEquals(2, games.size(), "There should be two games listed.");
+        assertTrue(games.isEmpty(), "Expected an empty collection when no games are added");
     }
 
     @Test
-    public void listGames_FailsWithInvalidAuthToken() {
-        // Setup - an invalid auth token
-        String invalidAuthToken = "invalidToken";
+    public void listGames_ReturnsCorrectGameData_WhenGamesAreAdded() throws DataAccessException {
+        // Setup - add some games
+        GameData game1 = memoryDataAccess.createGame("game1");
+        var gameT1 = prepGame(game1);
+        GameData game2 = memoryDataAccess.createGame("game2");
+        var gameT2 = prepGame(game1);
 
-        // Execute & Verify
-        assertThrows(DataAccessException.class, () -> listGamesService.listGames(invalidAuthToken), "Should throw an exception for invalid or expired authToken.");
+        // Execute
+        ArrayList<Object> games = listGamesService.listGames();
+
+
+        // Verify
+        assertEquals(2, games.size(), "Expected two games in the collection");
+        assertTrue(games.containsAll(java.util.Arrays.asList(gameT1, gameT2)), "The collection should contain the added games");
     }
+
+    public HashMap<String, Object> prepGame(GameData game){
+        var gameMap = new HashMap<String, Object>();
+        gameMap.put("gameId", game.gameID());
+        gameMap.put("whiteUsername", game.whiteUsername());
+        gameMap.put("blackUsername", game.blackUsername());
+        gameMap.put("gameName", game.gameName());
+
+        return gameMap;
+    }
+
 }

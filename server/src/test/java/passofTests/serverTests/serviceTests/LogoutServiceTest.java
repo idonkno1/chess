@@ -2,7 +2,7 @@ package passofTests.serverTests.serviceTests;
 
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
-import model.AuthDAO;
+import model.AuthData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,14 +31,14 @@ public class LogoutServiceTest {
     public void logoutUser_RemovesAuthTokenSuccessfully() throws DataAccessException {
         // Setup - create a user and generate an auth token
         String username = "testUser";
-        AuthDAO authToken = memoryDataAccess.createAuthToken(username);
-        assertNotNull(memoryDataAccess.getAuthToken(authToken), "Auth token should exist before logout.");
+        AuthData authToken = memoryDataAccess.createAuthToken(username);
+        assertNotNull(memoryDataAccess.getAuthToken(authToken.authToken()), "Auth token should exist before logout.");
 
         // Execute - attempt to logout the user
-        logoutService.logoutUser(authToken.getAuthToken());
+        logoutService.logoutUser(authToken.authToken());
 
         // Verify - the auth token should no longer exist
-        assertNull(memoryDataAccess.getAuthToken(authToken), "Auth token should be removed after logout.");
+        assertNull(memoryDataAccess.getAuthToken(authToken.authToken()), "Auth token should be removed after logout.");
     }
 
     @Test

@@ -2,17 +2,14 @@ package service;
 
 import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
-import model.GameDAO;
+import model.GameData;
 
 public class CreateGameService {
 
     private final DataAccess dataAccess;
     public CreateGameService(DataAccess dataAccess) {this.dataAccess = dataAccess;}
 
-    public GameDAO createGame(String authToken, String gameName) throws DataAccessException {
-        if (!dataAccess.isValidAuth(authToken)){
-            throw new DataAccessException("Error: unauthorized - invalid or expired authToken");
-        }
+    public GameData createGame(String gameName) throws DataAccessException {
 
         if (gameName == null || gameName.isEmpty()){
             throw new DataAccessException("Error: bad request - gameName is required");

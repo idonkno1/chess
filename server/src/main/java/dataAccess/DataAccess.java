@@ -1,30 +1,30 @@
 package dataAccess;
 
 import chess.ChessGame;
-import model.AuthDAO;
-import model.GameDAO;
-import model.UserDAO;
+import model.AuthData;
+import model.GameData;
+import model.UserData;
 
-import java.util.Collection;
+import java.util.ArrayList;
 
 public interface DataAccess {
     boolean isValidAuth(String authToken) throws DataAccessException;
 
-    UserDAO createUser(UserDAO userDAO) throws DataAccessException;
+    UserData createUser(UserData UserData) throws DataAccessException;
 
-    UserDAO getUser(String username) throws DataAccessException;
+    UserData getUser(String username) throws DataAccessException;
 
-    GameDAO createGame(String gameName) throws DataAccessException;
+    GameData createGame(String gameName) throws DataAccessException;
 
-    Collection<GameDAO> listGames() throws DataAccessException;
+    ArrayList<GameData> listGames() throws DataAccessException;
 
     void updateGame(int gameId, ChessGame gameState) throws DataAccessException;
 
-    GameDAO getGame(int gameId) throws DataAccessException;
+    GameData getGame(int gameId) throws DataAccessException;
 
-    AuthDAO createAuthToken(String username) throws DataAccessException;
+    AuthData createAuthToken(String username) throws DataAccessException;
 
-    AuthDAO getAuthToken(AuthDAO authToken) throws DataAccessException;
+    AuthData getAuthToken(String authToken) throws DataAccessException;
 
     void deleteAuthToken(String authToken) throws DataAccessException;
 
