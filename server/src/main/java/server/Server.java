@@ -1,6 +1,8 @@
 package server;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
 import model.GameData;
@@ -59,9 +61,9 @@ public class Server {
             res.status(401);
             return new Gson().toJson(Map.of("message", "Error: unauthorized"));
         }
-        var reqGame = new Gson().fromJson(req.body(), String.class);
+        var reqGame = new Gson().fromJson(req.body(), GameData.class);
 
-        GameData game = createGameService.createGame(reqGame);
+        GameData game = createGameService.createGame(String.valueOf(reqGame));
         res.type("application.json");
         return new Gson().toJson(Map.of("gameID", game.gameID()));
     }
@@ -99,28 +101,27 @@ public class Server {
         return new Gson().toJson(Map.of("games", games));
     }
     private Object Login(Request req, Response res) throws DataAccessException {
-        String authToken = req.headers("Authorization");
-        String username = dataAccess.getAuthToken(authToken).username();
-        String password =  dataAccess.getUser(username).password();
 
-        if (!dataAccess.isValidAuth(authToken)){
+        var loginInfo = new Gson().fromJson(req.body(), JsonElement.class);
+
+        JsonObject obj = loginInfo.getAsJsonObject();
+        String username = obj.get("username").getAsString();
+        String password = obj.get("password").getAsString();
+
+        try{
+            HashMap<String, String> userSession = loginService.loginUser(username, password);
+            res.status(200);
+            res.type("application/json");
+            return new Gson().toJson(userSession);
+
+        } catch (Exception e) {
             res.status(401);
             return new Gson().toJson(Map.of("message", "Error: unauthorized"));
         }
-        var loginInfo = new Gson().fromJson(req.body(), UserData.class);
-        if (loginInfo == null || !loginInfo.password().equals(password) || !loginInfo.username().equals(username)){
-            res.status(401);
-            return new Gson().toJson(Map.of("message", "Error: unauthorized"));
-        }
-
-        HashMap<String, String> userSession = loginService.loginUser(loginInfo.username());
-        res.status(200);
-        res.type("application/json");
-        return new Gson().toJson(userSession);
     }
     private Object Logout(Request req, Response res) throws DataAccessException {
         String authToken = req.headers("Authorization");
-        if(!dataAccess.isValidAuth(authToken)){
+        if(dataAccess.isValidAuth(authToken)){
             res.status(401);
             return new Gson().toJson(Map.of("message", "Error: unauthorized"));
         }

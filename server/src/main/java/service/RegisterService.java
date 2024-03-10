@@ -11,8 +11,6 @@ public class RegisterService {
     public RegisterService(DataAccess dataAccess) {this.dataAccess = dataAccess;}
 
     public HashMap<String, String> createUser(String username, String password, String email) throws DataAccessException {
-
-
         UserData newUser = new UserData(username, password, email);
         dataAccess.createUser(newUser);
         String authToken = String.valueOf(dataAccess.createAuthToken(username));

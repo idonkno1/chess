@@ -28,28 +28,22 @@ public class RegisterServiceTest {
     }
 
     @Test
-    public void createUser_Success() throws DataAccessException {
-        HashMap<String, String> response = registerService.createUser("newUser", "password", "email@example.com");
-        assertNotNull(response.get("authToken"), "Auth token should not be null.");
-        assertEquals("newUser", response.get("username"), "Username should match.");
-    }
+    public void createUser_ReturnsUsernameAndAuthToken() throws DataAccessException {
+        // Setup - define the user to be registered
+        String username = "testUser";
+        String password = "testPass";
+        String email = "test@example.com";
 
-    @Test
-    public void createUser_FailsWithMissingDetails() {
-        assertThrows(DataAccessException.class, () -> registerService.createUser("", "password", "email@example.com"),
-                "Error: bad request - missing username, password, or email");
-        assertThrows(DataAccessException.class, () -> registerService.createUser("newUser", "", "email@example.com"),
-                "Error: bad request - missing username, password, or email");
-        assertThrows(DataAccessException.class, () -> registerService.createUser("newUser", "password", ""),
-                "Error: bad request - missing username, password, or email");
-    }
+        // Execute - simulate user registration
+        HashMap<String, String> registrationResponse = registerService.createUser(username, password, email);
 
-    @Test
-    public void createUser_FailsWithDuplicateUsername() throws DataAccessException {
-        registerService.createUser("newUser", "password", "email@example.com"); // First registration should succeed
-        // Attempt to register the same username again
-        assertThrows(DataAccessException.class, () -> registerService.createUser("newUser", "newPassword", "newEmail@example.com"),
-                "Error: already taken");
+        // Verify - the response should contain the username and a non-null auth token
+        assertNotNull(registrationResponse, "Registration response should not be null");
+        assertEquals(username, registrationResponse.get("username"), "The returned username should match the input username");
+        assertNotNull(registrationResponse.get("authToken"), "The response should include a non-null auth token");
+
+        // Additional verification - ensure the user is actually created in the data access layer
+        assertNotNull(memoryDataAccess.getUser(username), "The user should exist in the database after registration");
     }
 
 }

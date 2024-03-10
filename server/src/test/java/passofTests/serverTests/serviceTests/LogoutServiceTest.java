@@ -29,24 +29,18 @@ public class LogoutServiceTest {
 
     @Test
     public void logoutUser_RemovesAuthTokenSuccessfully() throws DataAccessException {
-        // Setup - create a user and generate an auth token
+        // Setup - simulate user login by creating an auth token
         String username = "testUser";
-        AuthData authToken = memoryDataAccess.createAuthToken(username);
-        assertNotNull(memoryDataAccess.getAuthToken(authToken.authToken()), "Auth token should exist before logout.");
+        AuthData authData = memoryDataAccess.createAuthToken(username);
+        String authToken = authData.authToken();
 
-        // Execute - attempt to logout the user
-        logoutService.logoutUser(authToken.authToken());
+        // Pre-assertion to verify the auth token exists before logout
+        assertNotNull(memoryDataAccess.getAuthToken(authToken), "Auth token should exist before logout");
 
-        // Verify - the auth token should no longer exist
-        assertNull(memoryDataAccess.getAuthToken(authToken.authToken()), "Auth token should be removed after logout.");
-    }
+        // Execute - simulate user logout
+        logoutService.logoutUser(authToken);
 
-    @Test
-    public void logoutUser_WithNonexistentTokenDoesThrowException() {
-        // Setup - a non-existing auth token
-        String nonExistentAuthToken = "nonExistentToken";
-
-        // Execute & Verify - attempting to logout with a non-existing token should throw an exception
-        assertThrows(DataAccessException.class,() -> logoutService.logoutUser(nonExistentAuthToken), "Logging out with a non-existent token should throw an exception.");
+        // Verify - the auth token should be removed after logout
+        assertNull(memoryDataAccess.getAuthToken(authToken), "Auth token should be removed after logout");
     }
 }

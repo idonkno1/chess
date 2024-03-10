@@ -9,7 +9,12 @@ public class LoginService {
     private final DataAccess dataAccess;
     public LoginService(DataAccess dataAccess) {this.dataAccess = dataAccess;}
 
-    public HashMap<String, String> loginUser(String username) throws DataAccessException {
+    public HashMap<String, String> loginUser(String username, String password) throws DataAccessException {
+        var userTest = dataAccess.getUser(username);
+
+        if (username.isEmpty() || username.equals()){
+
+        }
 
         String authToken = String.valueOf(dataAccess.createAuthToken(username));
 
