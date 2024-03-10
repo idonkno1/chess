@@ -10,7 +10,7 @@ import java.util.Collection;
 public interface DataAccess {
     boolean isValidAuth(String authToken) throws DataAccessException;
 
-    void createUser(UserDAO userDAO) throws DataAccessException;
+    UserDAO createUser(UserDAO userDAO) throws DataAccessException;
 
     UserDAO getUser(String username) throws DataAccessException;
 
@@ -24,9 +24,9 @@ public interface DataAccess {
 
     AuthDAO createAuthToken(String username) throws DataAccessException;
 
-    AuthDAO getAuthToken(String authToken) throws DataAccessException;
+    AuthDAO getAuthToken(AuthDAO authToken) throws DataAccessException;
 
-    boolean deleteAuthToken(String authToken) throws DataAccessException;
+    void deleteAuthToken(String authToken) throws DataAccessException;
 
     void clearDAO();
 }

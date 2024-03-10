@@ -21,63 +21,38 @@ public class MemoryDataAccess implements DataAccess{
 
     public boolean isValidAuth(String authToken) {return authTokens.containsKey(authToken);}
 
-    public void createUser(UserDAO userDAO) throws DataAccessException {
-        if (users.containsKey(userDAO.getUsername())) {
-            throw new DataAccessException("User already exists.");
-        }
+    public UserDAO createUser(UserDAO userDAO){
         UserDAO user = new UserDAO(userDAO.getUsername(), userDAO.getPassword(), userDAO.getEmail());
         users.put(user.getUsername(), user);
+        return user;
     }
 
-    public UserDAO getUser(String username) throws DataAccessException {
-        if (!users.containsKey(username)) {
-            throw new DataAccessException("User does not exist.");
-        }
-        return users.get(username);}
+    public UserDAO getUser(String username) {return users.get(username);}
 
-    public GameDAO createGame(GameDAO gameDAO) throws DataAccessException {
-        if (games.containsKey(nextGameID)) {
-            throw new DataAccessException("Game ID already exists.");
-        }
-
+    public GameDAO createGame(GameDAO gameDAO){
         GameDAO game = new GameDAO(nextGameID++, gameDAO.getWhiteUsername(), gameDAO.getBlackUsername(), gameDAO.getGameName(), gameDAO.getGame());
         games.put(game.getGameID(), gameDAO);
         return game;
     }
     public Collection<GameDAO> listGames() {return games.values();}
 
-    public void updateGame(int gameId, ChessGame gameState) throws DataAccessException {
-        if (!games.containsKey(gameId)) {
-            throw new DataAccessException("Game with ID " + gameId + " does not exist.");
-        }
+    public void updateGame(int gameId, ChessGame gameState) {
         GameDAO game = games.get(gameId);
         game.setGame(gameState);
         games.put(gameId, game);
     }
-    public GameDAO getGame(int gameID) throws DataAccessException {
-        if (!games.containsKey(gameID)) {
-            throw new DataAccessException("Game does not exist.");
-        }
-        return games.get(gameID);}
+    public GameDAO getGame(int gameID) {return games.get(gameID);}
 
-    public AuthDAO createAuthToken(String username) throws DataAccessException {
+    public AuthDAO createAuthToken(String username){
         String authToken = UUID.randomUUID().toString();
         AuthDAO auth = new AuthDAO(authToken, username);
         authTokens.put(auth.getAuthToken(), auth);
         return auth;
     }
-    public AuthDAO getAuthToken(String authToken) throws DataAccessException {
-        if (!authTokens.containsKey(authToken)) {
-            throw new DataAccessException("Auth token does not exist.");
-        }
-        return authTokens.get(authToken);}
+    public AuthDAO getAuthToken(AuthDAO authToken){return authTokens.get(authToken.getAuthToken());}
 
-    public boolean deleteAuthToken(String authToken) throws DataAccessException {
-        if (!authTokens.containsKey(authToken)) {
-            return false;
-        }
+    public void deleteAuthToken(String authToken) {
         authTokens.remove(authToken);
-        return true;
     }
 
     public void clearDAO(){

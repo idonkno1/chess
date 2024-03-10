@@ -2,7 +2,6 @@ package server;
 
 import com.google.gson.Gson;
 import dataAccess.*;
-import exception.ResponseException;
 import model.*;
 import spark.*;
 
@@ -38,18 +37,15 @@ public class Server {
         Spark.delete("/db", this::Clear); //clear
         Spark.post("/user", this::Register); //register
         Spark.post("/session", this::Login); //login
-        Spark.post("/session", this::Logout); //logout
+        Spark.delete("/session", this::Logout); //logout
         Spark.get("/game", this::ListGames); //list games
         Spark.post("/game", this::CreateGame); //create game
         Spark.put("/game", this::JoinGame); //join game
-        Spark.exception(ResponseException.class, this::exceptionHandler);
-
 
         Spark.awaitInitialization();
         return Spark.port();
     }
 
-    private void exceptionHandler(ResponseException ex, Request req, Response res) {res.status(StatusCode());}
 
     private Object JoinGame(Request req, Response res) throws DataAccessException {
         String authToken = req.headers("Authorization");
@@ -67,9 +63,7 @@ public class Server {
 
         res.status(200);
         return "";
-
     }
-
     private Object CreateGame(Request req, Response res) throws DataAccessException {
         String authToken = req.headers("Authorization");
         if (authToken == null || authToken.isEmpty()){
@@ -87,7 +81,6 @@ public class Server {
         res.type("application.json");
         return new Gson().toJson(Map.of("gameID", game.getGameID()));
     }
-
     private Object ListGames(Request req, Response res) throws DataAccessException {
 
         String authToken = req.headers("Authorization");
@@ -100,7 +93,6 @@ public class Server {
         res.type("application/json");
         return new Gson().toJson(Map.of("games", games));
     }
-
     private Object Logout(Request req, Response res) throws DataAccessException {
         String authToken = req.headers("Authorization");
         if (authToken == null || authToken.isEmpty()){
@@ -111,7 +103,6 @@ public class Server {
         res.status(200);
         return "";
     }
-
     private Object Login(Request req, Response res) throws DataAccessException {
         var loginInfo = new Gson().fromJson(req.body(), UserDAO.class);
         if(loginInfo == null || loginInfo.getUsername().isEmpty() || loginInfo.getPassword().isEmpty()){
@@ -122,7 +113,6 @@ public class Server {
         res.type("application/json");
         return new Gson().toJson(userSession);
     }
-
     private Object Register(Request req, Response res) throws DataAccessException {
         var newUser = new Gson().fromJson(req.body(), UserDAO.class);
         if(newUser == null){
@@ -133,18 +123,13 @@ public class Server {
         res.type("application/json");
         return new Gson().toJson(registeredUser);
     }
-
     private Object Clear(Request req, Response res) throws DataAccessException {
         clearService.clearDatabase();
         res.status(200);
         return "";
     }
-
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
     }
-
-
-
 }
