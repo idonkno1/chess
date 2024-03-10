@@ -64,6 +64,7 @@ public class Server {
         var reqGame = new Gson().fromJson(req.body(), GameData.class);
 
         GameData game = createGameService.createGame(String.valueOf(reqGame));
+        res.status(200);
         res.type("application.json");
         return new Gson().toJson(Map.of("gameID", game.gameID()));
     }
@@ -96,11 +97,11 @@ public class Server {
             return new Gson().toJson(Map.of("message", "Error: unauthorized"));
         }
 
-        ArrayList<Object> games = listGamesService.listGames();
+        ArrayList<Object> games = listGamesService.listGames(authToken);
         res.type("application/json");
         return new Gson().toJson(Map.of("games", games));
     }
-    private Object Login(Request req, Response res) throws DataAccessException {
+    private Object Login(Request req, Response res) {
 
         var loginInfo = new Gson().fromJson(req.body(), JsonElement.class);
 
@@ -119,15 +120,18 @@ public class Server {
             return new Gson().toJson(Map.of("message", "Error: unauthorized"));
         }
     }
-    private Object Logout(Request req, Response res) throws DataAccessException {
+    private Object Logout(Request req, Response res) {
         String authToken = req.headers("Authorization");
-        if(dataAccess.isValidAuth(authToken)){
+
+        try{
+            logoutService.logoutUser(authToken);
+            res.status(200);
+            return "";
+
+        } catch (Exception e) {
             res.status(401);
             return new Gson().toJson(Map.of("message", "Error: unauthorized"));
         }
-        logoutService.logoutUser(authToken);
-        res.status(200);
-        return "";
     }
     private Object Register(Request req, Response res) throws DataAccessException {
         var newUser = new Gson().fromJson(req.body(), UserData.class);

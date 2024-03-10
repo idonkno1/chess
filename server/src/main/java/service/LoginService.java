@@ -10,10 +10,19 @@ public class LoginService {
     public LoginService(DataAccess dataAccess) {this.dataAccess = dataAccess;}
 
     public HashMap<String, String> loginUser(String username, String password) throws DataAccessException {
+        if (username.isEmpty() ){
+            throw new DataAccessException("Error: Incorrect username or password");
+        }
+
         var userTest = dataAccess.getUser(username);
+        if (userTest == null){
+            throw new DataAccessException("Error: Incorrect username or password");
+        }
 
-        if (username.isEmpty() || username.equals()){
+        var userPassword = userTest.password();
 
+        if (password.isEmpty() || !password.equals(userPassword)){
+            throw new DataAccessException("Error: Incorrect username or password");
         }
 
         String authToken = String.valueOf(dataAccess.createAuthToken(username));

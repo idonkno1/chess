@@ -11,7 +11,7 @@ public class ListGamesService {
     private final DataAccess dataAccess;
     public ListGamesService(DataAccess dataAccess) {this.dataAccess = dataAccess;}
 
-    public ArrayList<Object> listGames() throws DataAccessException {
+    public ArrayList<Object> listGames(String authToken) throws DataAccessException {
         var games = dataAccess.listGames();
         var gs = new ArrayList<>();
         for (GameData game : games) {

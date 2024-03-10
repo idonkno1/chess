@@ -28,19 +28,42 @@ public class LogoutServiceTest {
 
 
     @Test
-    public void logoutUser_RemovesAuthTokenSuccessfully() throws DataAccessException {
-        // Setup - simulate user login by creating an auth token
+    public void logoutUser_SuccessfullyDeletesAuthToken() throws DataAccessException {
+        // Setup - create an auth token
         String username = "testUser";
-        AuthData authData = memoryDataAccess.createAuthToken(username);
-        String authToken = authData.authToken();
+        AuthData auth = memoryDataAccess.createAuthToken(username);
+        String authToken = auth.authToken();
 
-        // Pre-assertion to verify the auth token exists before logout
-        assertNotNull(memoryDataAccess.getAuthToken(authToken), "Auth token should exist before logout");
-
-        // Execute - simulate user logout
+        // Execute
         logoutService.logoutUser(authToken);
 
-        // Verify - the auth token should be removed after logout
-        assertNull(memoryDataAccess.getAuthToken(authToken), "Auth token should be removed after logout");
+        // Verify - the auth token should be deleted
+        assertNull(memoryDataAccess.getAuthToken(authToken), "Auth token should be null after logout");
+    }
+
+    @Test
+    public void logoutUser_ThrowsException_IfAuthTokenIsEmpty() {
+        // Execute & Verify
+        assertThrows(DataAccessException.class, () -> logoutService.logoutUser(""), "Expected DataAccessException for empty authToken");
+    }
+
+    @Test
+    public void logoutUser_ThrowsException_IfAuthTokenDoesNotExist() {
+        // Setup - a non-existent auth token
+        String nonExistentToken = "nonExistentToken";
+
+        // Execute & Verify
+        assertThrows(DataAccessException.class, () -> logoutService.logoutUser(nonExistentToken), "Expected DataAccessException for non-existent authToken");
+    }
+    @Test
+    public void logoutUser_ThrowsException_OnSecondLogoutAttempt() throws DataAccessException {
+        // Setup - create an auth token and logout once successfully
+        String username = "testUser";
+        AuthData auth = memoryDataAccess.createAuthToken(username);
+        String authToken = auth.authToken();
+        logoutService.logoutUser(authToken); // First logout attempt
+
+        // Execute & Verify - second logout attempt should throw an exception
+        assertThrows(DataAccessException.class, () -> logoutService.logoutUser(authToken), "Expected DataAccessException on second logout attempt with the same authToken");
     }
 }

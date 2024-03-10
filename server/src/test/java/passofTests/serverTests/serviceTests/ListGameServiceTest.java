@@ -32,7 +32,7 @@ public class ListGameServiceTest {
     @Test
     public void listGames_ReturnsEmptyCollection_IfNoGames() throws DataAccessException {
         // Execute
-        ArrayList<Object> games = listGamesService.listGames();
+        ArrayList<Object> games = listGamesService.listGames("authToken");
 
         // Verify
         assertTrue(games.isEmpty(), "Expected an empty collection when no games are added");
@@ -47,7 +47,7 @@ public class ListGameServiceTest {
         var gameT2 = prepGame(game1);
 
         // Execute
-        ArrayList<Object> games = listGamesService.listGames();
+        ArrayList<Object> games = listGamesService.listGames("authToken");
 
 
         // Verify
