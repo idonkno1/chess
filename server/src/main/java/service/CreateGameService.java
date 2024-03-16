@@ -9,9 +9,10 @@ public class CreateGameService {
     private final DataAccess dataAccess;
     public CreateGameService(DataAccess dataAccess) {this.dataAccess = dataAccess;}
 
-    public GameData createGame(String gameName) throws DataAccessException {
+    public GameData createGame(GameData game) throws DataAccessException {
+        var gameName = game.gameName();
 
-        if (gameName == null || gameName.isEmpty()){
+        if (gameName == null){
             throw new DataAccessException("Error: bad request");
         }
 

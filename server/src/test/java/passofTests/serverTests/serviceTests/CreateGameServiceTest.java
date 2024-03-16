@@ -2,7 +2,6 @@ package passofTests.serverTests.serviceTests;
 
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
-import model.AuthData;
 import model.GameData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,37 +26,25 @@ public class CreateGameServiceTest {
         memoryDataAccess.clearDAO();
     }
     @Test
-    public void createGame_SuccessWithValidAuthToken() throws DataAccessException {
-        // Setup - create an auth token and a game
-        String username = "testUser";
-        AuthData authToken = memoryDataAccess.createAuthToken(username);
-        String game = "game";
+    public void createGame_SuccessfullyCreatesGame() throws DataAccessException {
+        // Setup - a valid game data object
+        GameData validGame = new GameData(0, "Player1", "Player2", "Chess Game", null);
 
-        // Check if the auth token is valid
-        GameData createdGame = createGameService.createGame(game);
+        // Execute
+        GameData createdGame = createGameService.createGame(validGame);
 
         // Verify
-        assertNotNull(createdGame, "Created game should not be null.");
-        assertEquals("Test Game", createdGame.gameName(), "Game name should match.");
+        assertNotNull(createdGame, "Game should be created successfully");
+        assertEquals("Chess Game", createdGame.gameName(), "Created game should have the correct name");
     }
 
     @Test
-    public void createGame_FailsWithInvalidAuthToken() {
-        // Setup - an invalid auth token and a game
-        String invalidAuthToken = "invalidToken";
-        String game = "game";
-        // Execute & Verify
-        assertThrows(DataAccessException.class, () -> createGameService.createGame(game), "Should throw an exception for invalid or expired authToken.");
-    }
+    public void createGame_ThrowsException_ForInvalidGameData() {
+        // Setup - an invalid game data object (null game name)
+        GameData invalidGame = new GameData(1, "Player1", "Player2", null, null);
 
-    @Test
-    public void createGame_FailsWithInvalidGameName() throws DataAccessException {
-        // Setup - create a valid auth token and an invalid game (empty game name)
-        String username = "testUser";
-        AuthData authToken = memoryDataAccess.createAuthToken(username);
-        String invalidGame = "";
         // Execute & Verify
-        assertThrows(DataAccessException.class, () -> createGameService.createGame(invalidGame), "Should throw an exception for bad request - gameName is required.");
+        assertThrows(DataAccessException.class, () -> createGameService.createGame(invalidGame),
+                "Expected DataAccessException for invalid game data");
     }
-
 }

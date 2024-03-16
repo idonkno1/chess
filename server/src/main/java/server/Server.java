@@ -63,7 +63,7 @@ public class Server {
         }
         var gameName = new Gson().fromJson(req.body(), GameData.class);
 
-        GameData game = createGameService.createGame(gameName.gameName());
+        GameData game = createGameService.createGame(gameName);
         res.status(200);
         res.type("application.json");
         return new Gson().toJson(Map.of("gameID", game.gameID()));
