@@ -13,7 +13,7 @@ public class RegisterService {
     public HashMap<String, String> createUser(String username, String password, String email) throws DataAccessException {
         UserData newUser = new UserData(username, password, email);
         dataAccess.createUser(newUser);
-        String authToken = String.valueOf(dataAccess.createAuthToken(username));
+        String authToken = String.valueOf(dataAccess.createAuthToken(username).authToken());
 
         HashMap<String, String> response = new HashMap<>();
         response.put("username", username);

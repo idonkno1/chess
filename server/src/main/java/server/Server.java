@@ -6,13 +6,13 @@ import com.google.gson.JsonObject;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
 import model.GameData;
+import model.JoinReqData;
 import model.UserData;
 import service.*;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,9 +61,9 @@ public class Server {
             res.status(401);
             return new Gson().toJson(Map.of("message", "Error: unauthorized"));
         }
-        var reqGame = new Gson().fromJson(req.body(), GameData.class);
+        var gameName = new Gson().fromJson(req.body(), GameData.class);
 
-        GameData game = createGameService.createGame(String.valueOf(reqGame));
+        GameData game = createGameService.createGame(gameName.gameName());
         res.status(200);
         res.type("application.json");
         return new Gson().toJson(Map.of("gameID", game.gameID()));
@@ -75,20 +75,22 @@ public class Server {
             return new Gson().toJson(Map.of("message", "Error: unauthorized"));
         }
 
-        var joinReq = new Gson().fromJson(req.body(), GameData.class);
+        var joinReq = new Gson().fromJson(req.body(), JoinReqData.class);
 
         if (dataAccess.getGame(joinReq.gameID()) == null) {
             res.status(400);
             return new Gson().toJson(Map.of("message", "Error: bad request"));
         }
-        String whiteUsername = dataAccess.getGame(joinReq.gameID()).whiteUsername();
-        String blackUsername = dataAccess.getGame(joinReq.gameID()).blackUsername();
+        try{
+            joinGameService.joinGame(joinReq, authToken);
+            res.status(200);
+            return new Gson().toJson(Map.of("success", true));
 
+        } catch (Exception e) {
+            res.status(403);
+            return new Gson().toJson(Map.of("message", "Error: already taken"));
+        }
 
-        boolean success = joinGameService.joinGame(joinReq, authToken);
-
-        res.status(200);
-        return "";
     }
     private Object ListGames(Request req, Response res) throws DataAccessException {
         String authToken = req.headers("Authorization");
@@ -97,7 +99,7 @@ public class Server {
             return new Gson().toJson(Map.of("message", "Error: unauthorized"));
         }
 
-        ArrayList<Object> games = listGamesService.listGames(authToken);
+        var games = listGamesService.listGames();
         res.type("application/json");
         return new Gson().toJson(Map.of("games", games));
     }
@@ -126,7 +128,7 @@ public class Server {
         try{
             logoutService.logoutUser(authToken);
             res.status(200);
-            return "";
+            return new Gson().toJson(Map.of("success", true));
 
         } catch (Exception e) {
             res.status(401);

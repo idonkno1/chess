@@ -12,7 +12,7 @@ public class CreateGameService {
     public GameData createGame(String gameName) throws DataAccessException {
 
         if (gameName == null || gameName.isEmpty()){
-            throw new DataAccessException("Error: bad request - gameName is required");
+            throw new DataAccessException("Error: bad request");
         }
 
         return dataAccess.createGame(gameName);

@@ -10,7 +10,7 @@ import java.util.*;
 
 public class MemoryDataAccess implements DataAccess{
 
-    private int nextGameID = 1;
+    private int nextGameID = 0;
 
     private final HashMap<String, UserData> users = new HashMap<>();
     private final HashMap<Integer, GameData> games = new HashMap<>();
@@ -31,21 +31,18 @@ public class MemoryDataAccess implements DataAccess{
         games.put(game.gameID(), game);
         return game;
     }
-    public ArrayList<GameData> listGames() {
-        var gameList = new ArrayList<GameData>();
-        for (var i = 1; i < nextGameID; i++){
-            var game = games.get(i);
-            if(game != null){
-                gameList.add(game);
-            }
-        }
-        return gameList;
-    }
+    public Collection<GameData> listGames() {return games.values();}
 
-    public void updateGame(int gameId, ChessGame gameState) {
-        GameData game = games.get(gameId);
-        game = game.update(gameState);
-        games.put(gameId, game);
+    public void updateGame(GameData gameToBeUpdated) {
+        GameData game = games.get(gameToBeUpdated.gameID());
+        if (game.whiteUsername() == null){
+            game = game.updateWhiteUsername(gameToBeUpdated.whiteUsername());
+        }
+        if (game.blackUsername() == null){
+            game = game.updateBlackUsername(gameToBeUpdated.blackUsername());
+        }
+        game = game.updateGameState(gameToBeUpdated.game());
+        games.put(game.gameID(), game);
     }
     public GameData getGame(int gameID) {return games.get(gameID);}
 

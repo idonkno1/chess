@@ -25,7 +25,7 @@ public class LoginService {
             throw new DataAccessException("Error: Incorrect username or password");
         }
 
-        String authToken = String.valueOf(dataAccess.createAuthToken(username));
+        String authToken = String.valueOf(dataAccess.createAuthToken(username).authToken());
 
         HashMap<String, String> response = new HashMap<>();
         response.put("username", username);
