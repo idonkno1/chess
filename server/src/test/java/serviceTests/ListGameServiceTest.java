@@ -1,4 +1,4 @@
-package passofTests.serverTests.serviceTests;
+package serviceTests;
 
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;

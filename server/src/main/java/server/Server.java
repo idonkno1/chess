@@ -38,37 +38,41 @@ public class Server {
 
         // Register your endpoints and handle exceptions here.
 
-        Spark.delete("/db", this::Clear); //clear
-        Spark.post("/user", this::Register); //register
-        Spark.post("/session", this::Login); //login
-        Spark.delete("/session", this::Logout); //logout
-        Spark.get("/game", this::ListGames); //list games
-        Spark.post("/game", this::CreateGame); //create game
-        Spark.put("/game", this::JoinGame); //join game
+        Spark.delete("/db", this::clear); //clear
+        Spark.post("/user", this::register); //register
+        Spark.post("/session", this::login); //login
+        Spark.delete("/session", this::logout); //logout
+        Spark.get("/game", this::listGames); //list games
+        Spark.post("/game", this::createGame); //create game
+        Spark.put("/game", this::joinGame); //join game
 
         Spark.awaitInitialization();
         return Spark.port();
     }
 
-    private Object Clear(Request req, Response res) throws DataAccessException {
+    private Object clear(Request req, Response res) throws DataAccessException {
         clearService.clearDatabase();
         res.status(200);
         return "";
     }
-    private Object CreateGame(Request req, Response res) throws DataAccessException {
+    private Object createGame(Request req, Response res) throws DataAccessException {
         String authToken = req.headers("Authorization");
         if (!dataAccess.isValidAuth(authToken)){
             res.status(401);
             return new Gson().toJson(Map.of("message", "Error: unauthorized"));
         }
         var gameName = new Gson().fromJson(req.body(), GameData.class);
-
-        GameData game = createGameService.createGame(gameName);
-        res.status(200);
-        res.type("application.json");
-        return new Gson().toJson(Map.of("gameID", game.gameID()));
+        try {
+            GameData game = createGameService.createGame(gameName);
+            res.status(200);
+            res.type("application.json");
+            return new Gson().toJson(Map.of("gameID", game.gameID()));
+        }catch (Exception e){
+            res.status(400);
+            return new Gson().toJson(Map.of("message", "Error: bad request"));
+        }
     }
-    private Object JoinGame(Request req, Response res) throws DataAccessException {
+    private Object joinGame(Request req, Response res) throws DataAccessException {
         String authToken = req.headers("Authorization");
         if (!dataAccess.isValidAuth(authToken)){
             res.status(401);
@@ -92,7 +96,7 @@ public class Server {
         }
 
     }
-    private Object ListGames(Request req, Response res) throws DataAccessException {
+    private Object listGames(Request req, Response res) throws DataAccessException {
         String authToken = req.headers("Authorization");
         if(!dataAccess.isValidAuth(authToken)){
             res.status(401);
@@ -103,7 +107,7 @@ public class Server {
         res.type("application/json");
         return new Gson().toJson(Map.of("games", games));
     }
-    private Object Login(Request req, Response res) {
+    private Object login(Request req, Response res) {
 
         var loginInfo = new Gson().fromJson(req.body(), JsonElement.class);
 
@@ -122,7 +126,7 @@ public class Server {
             return new Gson().toJson(Map.of("message", "Error: unauthorized"));
         }
     }
-    private Object Logout(Request req, Response res) {
+    private Object logout(Request req, Response res) {
         String authToken = req.headers("Authorization");
 
         try{
@@ -135,7 +139,7 @@ public class Server {
             return new Gson().toJson(Map.of("message", "Error: unauthorized"));
         }
     }
-    private Object Register(Request req, Response res) throws DataAccessException {
+    private Object register(Request req, Response res) throws DataAccessException {
         var newUser = new Gson().fromJson(req.body(), UserData.class);
         if(newUser.username() == null || newUser.password() == null || newUser.email() == null){
             res.status(400);

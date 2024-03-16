@@ -159,12 +159,8 @@ public class ChessPiece {
                         }
                     }
 
-                }
-
-                break;
-
+                }break;
         }
-
         return moves;
     }
 
@@ -190,8 +186,7 @@ public class ChessPiece {
                 else {
                     if (target.getTeamColor() != teamColor){
                         moves.add(new ChessMove(myPosition, new ChessPosition(nextRow, nextCol), null));
-                    }
-                    break;
+                    }break;
                 }
 
             }
@@ -215,7 +210,6 @@ public class ChessPiece {
                 }
             }
         }
-
     }
 
     @Override

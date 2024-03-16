@@ -9,7 +9,7 @@ import java.util.Collection;
 public interface DataAccess {
     boolean isValidAuth(String authToken) throws DataAccessException;
 
-    UserData createUser(UserData UserData) throws DataAccessException;
+    UserData createUser(UserData userData) throws DataAccessException;
 
     UserData getUser(String username) throws DataAccessException;
 

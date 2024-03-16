@@ -12,7 +12,7 @@ public class CreateGameService {
     public GameData createGame(GameData game) throws DataAccessException {
         var gameName = game.gameName();
 
-        if (gameName == null){
+        if (game == null || gameName.isEmpty()){
             throw new DataAccessException("Error: bad request");
         }
 

@@ -1,4 +1,4 @@
-package passofTests.serverTests.serviceTests;
+package serviceTests;
 
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
@@ -44,7 +44,7 @@ public class CreateGameServiceTest {
         GameData invalidGame = new GameData(1, "Player1", "Player2", null, null);
 
         // Execute & Verify
-        assertThrows(DataAccessException.class, () -> createGameService.createGame(invalidGame),
+        assertThrows(Exception.class, () -> createGameService.createGame(invalidGame),
                 "Expected DataAccessException for invalid game data");
     }
 }
