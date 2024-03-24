@@ -60,7 +60,7 @@ public class DataAccessTests {
 
     @ParameterizedTest
     @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
-    void createUser_ValidData_CreatesUserSuccessfully(Class<? extends DataAccess> dataAccessClass) throws DataAccessException, SQLException {
+    void createUser_ValidData_CreatesUserSuccessfully(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         DataAccess dataAccess = getDataAccess(dataAccessClass);
 
 
@@ -71,7 +71,7 @@ public class DataAccessTests {
 
     @ParameterizedTest
     @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
-    void deleteAuthToken_NonExistingToken_CompletesWithoutError(Class<? extends DataAccess> dataAccessClass) throws DataAccessException, SQLException {
+    void deleteAuthToken_NonExistingToken_CompletesWithoutError(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         DataAccess dataAccess = getDataAccess(dataAccessClass);
 
         assertDoesNotThrow(() -> dataAccess.deleteAuthToken("nonexistentToken"));
