@@ -10,6 +10,8 @@ import model.UserData;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.sql.SQLException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -40,6 +42,44 @@ public class DataAccessTests {
 
     @ParameterizedTest
     @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    void isValidAuth_ValidToken_ReturnsTrue(Class<? extends DataAccess> dataAccessClass) throws DataAccessException, SQLException {
+        DataAccess dataAccess = getDataAccess(dataAccessClass);
+
+        String username = "user";
+        AuthData authData = dataAccess.createAuthToken(username);
+        assertTrue(dataAccess.isValidAuth(authData.authToken()));
+    }
+
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    void isValidAuth_InvalidToken_ReturnsFalse(Class<? extends DataAccess> dataAccessClass) throws DataAccessException, SQLException {
+        DataAccess dataAccess = getDataAccess(dataAccessClass);
+
+        assertFalse(dataAccess.isValidAuth("nonexistentToken"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    void createUser_ValidData_CreatesUserSuccessfully(Class<? extends DataAccess> dataAccessClass) throws DataAccessException, SQLException {
+        DataAccess dataAccess = getDataAccess(dataAccessClass);
+
+
+        UserData userData = new UserData("user", "pass", "email@example.com");
+        UserData createdUser = dataAccess.createUser(userData);
+        assertEquals(userData, createdUser);
+    }
+
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    void deleteAuthToken_NonExistingToken_CompletesWithoutError(Class<? extends DataAccess> dataAccessClass) throws DataAccessException, SQLException {
+        DataAccess dataAccess = getDataAccess(dataAccessClass);
+
+        assertDoesNotThrow(() -> dataAccess.deleteAuthToken("nonexistentToken"));
+    }
+
+
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
     void createGameAndListGames(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         DataAccess dataAccess = getDataAccess(dataAccessClass);
 
@@ -47,6 +87,20 @@ public class DataAccessTests {
         GameData game = dataAccess.createGame(gameName);
         assertTrue(dataAccess.listGames().contains(game));
     }
+
+    @ParameterizedTest
+    @ValueSource(classes = {MySqlDataAccess.class})
+    void createGame_NameTooLong_ThrowsException(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
+        DataAccess dataAccess = getDataAccess(dataAccessClass);
+
+        // Generate a game name longer than the maximum allowed length
+        String longGameName = "G".repeat(300);
+
+        // Expect an exception due to exceeding the maximum length
+        assertThrows(RuntimeException.class, () -> dataAccess.createGame(longGameName),
+                "Expected creating a game with a name too long to throw an exception.");
+    }
+
 
     @ParameterizedTest
     @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
