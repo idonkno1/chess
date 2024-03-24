@@ -1,11 +1,12 @@
 package serviceTests;
 
+import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
+import dataAccess.MySqlDataAccess;
 import model.GameData;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import service.ListGamesService;
 
 import java.util.Collection;
@@ -14,32 +15,38 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ListGameServiceTest {
-    private MemoryDataAccess memoryDataAccess;
     private ListGamesService listGamesService;
 
-    @BeforeEach
-    public void setUp() {
-        memoryDataAccess = new MemoryDataAccess();
-        listGamesService = new ListGamesService(memoryDataAccess);
+    private DataAccess getDataAccess(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
+        DataAccess dataAccess;
+        if (dataAccessClass.equals(MemoryDataAccess.class)) {
+            dataAccess = new MemoryDataAccess();
+        } else {
+            dataAccess = new MySqlDataAccess();
+        }
+        dataAccess.clearDAO();
+        return dataAccess;
     }
-
-    @AfterEach
-    public void tearDown() {
-        // Clear the database after each test to ensure a clean state
-        memoryDataAccess.clearDAO();
-    }
-    @Test
-    public void listGames_ReturnsEmptyCollection_IfNoGames() throws DataAccessException {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    public void listGames_ReturnsEmptyCollection_IfNoGames(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         // Execute
+        DataAccess memoryDataAccess = getDataAccess(dataAccessClass);
+        listGamesService = new ListGamesService(memoryDataAccess);
+
         Collection games = listGamesService.listGames();
 
         // Verify
         assertTrue(games.isEmpty(), "Expected an empty collection when no games are added");
     }
 
-    @Test
-    public void listGames_ReturnsCorrectGameData_WhenGamesAreAdded() throws DataAccessException {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    public void listGames_ReturnsCorrectGameData_WhenGamesAreAdded(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         // Setup - add some games
+        DataAccess memoryDataAccess = getDataAccess(dataAccessClass);
+        listGamesService = new ListGamesService(memoryDataAccess);
+
         GameData game1 = memoryDataAccess.createGame("game1");
 
         GameData game2 = memoryDataAccess.createGame("game2");

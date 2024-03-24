@@ -226,7 +226,7 @@ public class MySqlDataAccess implements DataAccess{
                PRIMARY KEY (`username`)
              )
             """,
-                    """
+            """
             CREATE TABLE IF NOT EXISTS games (
                `gameID` INT NOT NULL AUTO_INCREMENT,
                `whiteUsername` VARCHAR(256),
@@ -242,6 +242,9 @@ public class MySqlDataAccess implements DataAccess{
                `username` VARCHAR(256) NOT NULL,
                PRIMARY KEY (`authToken`)
              )
+            """,
+            """
+            ALTER TABLE games AUTO_INCREMENT = 0
             """
     };
 

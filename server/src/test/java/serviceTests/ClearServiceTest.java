@@ -1,31 +1,37 @@
 package serviceTests;
 
+import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
+import dataAccess.MySqlDataAccess;
 import model.AuthData;
 import model.UserData;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import service.ClearService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ClearServiceTest {
-    private MemoryDataAccess memoryDataAccess;
     private ClearService clearService;
 
-    @BeforeEach
-    public void setUp() {
-        // Initialize MemoryDataAccess
-        memoryDataAccess = new MemoryDataAccess();
-        // Initialize ClearService with MemoryDataAccess
-        clearService = new ClearService(memoryDataAccess);
+    private DataAccess getDataAccess(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
+        DataAccess dataAccess;
+        if (dataAccessClass.equals(MemoryDataAccess.class)) {
+            dataAccess = new MemoryDataAccess();
+        } else {
+            dataAccess = new MySqlDataAccess();
+        }
+        dataAccess.clearDAO();
+        return dataAccess;
     }
 
-    @Test
-    public void clearDatabase_ClearsAllDataSuccessfully() throws DataAccessException {
-        // Setup
-        // Add a user
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    public void clearDatabase_ClearsAllDataSuccessfully(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
+        DataAccess memoryDataAccess = getDataAccess(dataAccessClass);
+        clearService = new ClearService(memoryDataAccess);
+
         memoryDataAccess.createUser(new UserData("username", "password", "email@example.com"));
         // Add an auth token
         AuthData auth = memoryDataAccess.createAuthToken("username");

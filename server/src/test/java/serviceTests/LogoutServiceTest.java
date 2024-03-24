@@ -1,35 +1,38 @@
 package serviceTests;
 
+import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
+import dataAccess.MySqlDataAccess;
 import model.AuthData;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import service.LogoutService;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class LogoutServiceTest {
-    private MemoryDataAccess memoryDataAccess;
     private LogoutService logoutService;
 
-    @BeforeEach
-    public void setUp() {
-        memoryDataAccess = new MemoryDataAccess();
-        logoutService = new LogoutService(memoryDataAccess);
+    private DataAccess getDataAccess(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
+        DataAccess dataAccess;
+        if (dataAccessClass.equals(MemoryDataAccess.class)) {
+            dataAccess = new MemoryDataAccess();
+        } else {
+            dataAccess = new MySqlDataAccess();
+        }
+        dataAccess.clearDAO();
+        return dataAccess;
     }
 
-    @AfterEach
-    public void tearDown() {
-        // Clear the database after each test to ensure a clean state
-        memoryDataAccess.clearDAO();
-    }
-
-
-    @Test
-    public void logoutUser_SuccessfullyDeletesAuthToken() throws DataAccessException {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    public void logoutUser_SuccessfullyDeletesAuthToken(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         // Setup - create an auth token
+        DataAccess memoryDataAccess = getDataAccess(dataAccessClass);
+        logoutService = new LogoutService(memoryDataAccess);
+
         String username = "testUser";
         AuthData auth = memoryDataAccess.createAuthToken(username);
         String authToken = auth.authToken();
@@ -41,23 +44,35 @@ public class LogoutServiceTest {
         assertNull(memoryDataAccess.getAuthToken(authToken), "Auth token should be null after logout");
     }
 
-    @Test
-    public void logoutUser_ThrowsException_IfAuthTokenIsEmpty() {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    public void logoutUser_ThrowsException_IfAuthTokenIsEmpty(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         // Execute & Verify
+        DataAccess memoryDataAccess = getDataAccess(dataAccessClass);
+        logoutService = new LogoutService(memoryDataAccess);
+
         assertThrows(DataAccessException.class, () -> logoutService.logoutUser(""), "Expected DataAccessException for empty authToken");
     }
 
-    @Test
-    public void logoutUser_ThrowsException_IfAuthTokenDoesNotExist() {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    public void logoutUser_ThrowsException_IfAuthTokenDoesNotExist(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         // Setup - a non-existent auth token
+        DataAccess memoryDataAccess = getDataAccess(dataAccessClass);
+        logoutService = new LogoutService(memoryDataAccess);
+
         String nonExistentToken = "nonExistentToken";
 
         // Execute & Verify
         assertThrows(DataAccessException.class, () -> logoutService.logoutUser(nonExistentToken), "Expected DataAccessException for non-existent authToken");
     }
-    @Test
-    public void logoutUser_ThrowsException_OnSecondLogoutAttempt() throws DataAccessException {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    public void logoutUser_ThrowsException_OnSecondLogoutAttempt(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         // Setup - create an auth token and logout once successfully
+        DataAccess memoryDataAccess = getDataAccess(dataAccessClass);
+        logoutService = new LogoutService(memoryDataAccess);
+
         String username = "testUser";
         AuthData auth = memoryDataAccess.createAuthToken(username);
         String authToken = auth.authToken();

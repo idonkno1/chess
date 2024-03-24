@@ -10,7 +10,7 @@ import java.util.*;
 
 public class MemoryDataAccess implements DataAccess{
 
-    private int nextGameID = 0;
+    private int nextGameID = 1;
 
     private final HashMap<String, UserData> users = new HashMap<>();
     private final HashMap<Integer, GameData> games = new HashMap<>();

@@ -1,35 +1,40 @@
 package serviceTests;
 
+import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import dataAccess.MySqlDataAccess;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import service.RegisterService;
 
 import java.util.HashMap;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 public class RegisterServiceTest {
-    private MemoryDataAccess memoryDataAccess;
     private RegisterService registerService;
 
-    @BeforeEach
-    public void setUp() {
-        memoryDataAccess = new MemoryDataAccess();
-        registerService = new RegisterService(memoryDataAccess);
-    }
-    @AfterEach
-    public void tearDown() {
-        // Clear the database after each test
-        memoryDataAccess.clearDAO();
+    private DataAccess getDataAccess(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
+        DataAccess dataAccess;
+        if (dataAccessClass.equals(MemoryDataAccess.class)) {
+            dataAccess = new MemoryDataAccess();
+        } else {
+            dataAccess = new MySqlDataAccess();
+        }
+        dataAccess.clearDAO();
+        return dataAccess;
     }
 
-    @Test
-    public void createUser_ReturnsUsernameAndAuthToken() throws DataAccessException {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    public void createUser_ReturnsUsernameAndAuthToken(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         // Setup - define the user to be registered
+        DataAccess memoryDataAccess = getDataAccess(dataAccessClass);
+        registerService = new RegisterService(memoryDataAccess);
+
         String username = "testUser";
         String password = "testPass";
         String email = "test@example.com";

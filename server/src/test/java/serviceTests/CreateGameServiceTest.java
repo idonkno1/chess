@@ -1,33 +1,37 @@
 package serviceTests;
 
+import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
+import dataAccess.MySqlDataAccess;
 import model.GameData;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import service.CreateGameService;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CreateGameServiceTest {
-    private MemoryDataAccess memoryDataAccess;
     private CreateGameService createGameService;
 
-    @BeforeEach
-    public void setUp() {
-        memoryDataAccess = new MemoryDataAccess();
-        createGameService = new CreateGameService(memoryDataAccess);
+    private DataAccess getDataAccess(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
+        DataAccess dataAccess;
+        if (dataAccessClass.equals(MemoryDataAccess.class)) {
+            dataAccess = new MemoryDataAccess();
+        } else {
+            dataAccess = new MySqlDataAccess();
+        }
+        dataAccess.clearDAO();
+        return dataAccess;
     }
 
-    @AfterEach
-    public void tearDown() {
-        // Clear the database after each test to ensure a clean state
-        memoryDataAccess.clearDAO();
-    }
-    @Test
-    public void createGame_SuccessfullyCreatesGame() throws DataAccessException {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    public void createGame_SuccessfullyCreatesGame(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         // Setup - a valid game data object
+        DataAccess memoryDataAccess = getDataAccess(dataAccessClass);
+        createGameService = new CreateGameService(memoryDataAccess);
+
         GameData validGame = new GameData(0, "Player1", "Player2", "Chess Game", null);
 
         // Execute
@@ -38,9 +42,12 @@ public class CreateGameServiceTest {
         assertEquals("Chess Game", createdGame.gameName(), "Created game should have the correct name");
     }
 
-    @Test
-    public void createGame_ThrowsException_ForInvalidGameData() {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    public void createGame_ThrowsException_ForInvalidGameData(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         // Setup - an invalid game data object (null game name)
+        DataAccess memoryDataAccess = getDataAccess(dataAccessClass);
+        createGameService = new CreateGameService(memoryDataAccess);
         GameData invalidGame = new GameData(1, "Player1", "Player2", null, null);
 
         // Execute & Verify

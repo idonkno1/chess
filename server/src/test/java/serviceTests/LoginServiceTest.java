@@ -1,11 +1,12 @@
 package serviceTests;
 
+import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
+import dataAccess.MySqlDataAccess;
 import model.UserData;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import service.LoginService;
 
 import java.util.HashMap;
@@ -13,23 +14,25 @@ import java.util.HashMap;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LoginServiceTest {
-    private MemoryDataAccess memoryDataAccess;
     private LoginService loginService;
 
-    @BeforeEach
-    public void setUp() {
-        memoryDataAccess = new MemoryDataAccess();
-        loginService = new LoginService(memoryDataAccess);
+    private DataAccess getDataAccess(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
+        DataAccess dataAccess;
+        if (dataAccessClass.equals(MemoryDataAccess.class)) {
+            dataAccess = new MemoryDataAccess();
+        } else {
+            dataAccess = new MySqlDataAccess();
+        }
+        dataAccess.clearDAO();
+        return dataAccess;
     }
-
-    @AfterEach
-    public void tearDown() {
-        // Clear the database after each test to ensure a clean state
-        memoryDataAccess.clearDAO();
-    }
-    @Test
-    public void loginUser_Successfully() throws DataAccessException {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    public void loginUser_Successfully(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         // Setup - create a user
+        DataAccess memoryDataAccess = getDataAccess(dataAccessClass);
+        loginService = new LoginService(memoryDataAccess);
+
         String username = "testUser";
         String password = "testPass";
         memoryDataAccess.createUser(new UserData(username, password, "test@example.com"));
@@ -43,9 +46,13 @@ public class LoginServiceTest {
         assertNotNull(result.get("authToken"), "Auth token should not be null");
     }
 
-    @Test
-    public void loginUser_Fails_WithIncorrectCredentials() {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    public void loginUser_Fails_WithIncorrectCredentials(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         // Setup - create a user
+        DataAccess memoryDataAccess = getDataAccess(dataAccessClass);
+        loginService = new LoginService(memoryDataAccess);
+
         String username = "testUser";
         String password = "testPass";
         memoryDataAccess.createUser(new UserData(username, password, "test@example.com"));
@@ -57,9 +64,13 @@ public class LoginServiceTest {
         assertThrows(DataAccessException.class, () -> loginService.loginUser("wrongUser", password), "Should throw exception for wrong username");
     }
 
-    @Test
-    public void loginUser_Fails_WithEmptyCredentials() {
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    public void loginUser_Fails_WithEmptyCredentials(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
         // Verify - Empty username
+        DataAccess memoryDataAccess = getDataAccess(dataAccessClass);
+        loginService = new LoginService(memoryDataAccess);
+
         assertThrows(DataAccessException.class, () -> loginService.loginUser("", "anyPassword"), "Should throw exception for empty username");
 
         // Verify - Empty password
