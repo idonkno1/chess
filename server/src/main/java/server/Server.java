@@ -3,8 +3,9 @@ package server;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
-import dataAccess.MemoryDataAccess;
+import dataAccess.MySqlDataAccess;
 import model.GameData;
 import model.JoinReqData;
 import model.UserData;
@@ -13,12 +14,13 @@ import spark.Request;
 import spark.Response;
 import spark.Spark;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Server {
 
-    private final dataAccess.DataAccess dataAccess = new MemoryDataAccess();
+    private final DataAccess dataAccess = new MySqlDataAccess();
     private final ClearService clearService = new ClearService(dataAccess);
     private final CreateGameService createGameService = new CreateGameService(dataAccess);
     private final JoinGameService joinGameService = new JoinGameService(dataAccess);
@@ -53,9 +55,9 @@ public class Server {
     private Object clear(Request req, Response res) throws DataAccessException {
         clearService.clearDatabase();
         res.status(200);
-        return "";
+        return new Gson().toJson(Map.of("success", true));
     }
-    private Object createGame(Request req, Response res) throws DataAccessException {
+    private Object createGame(Request req, Response res) throws DataAccessException, SQLException {
         String authToken = req.headers("Authorization");
         if (!dataAccess.isValidAuth(authToken)){
             res.status(401);
@@ -72,7 +74,7 @@ public class Server {
             return new Gson().toJson(Map.of("message", "Error: bad request"));
         }
     }
-    private Object joinGame(Request req, Response res) throws DataAccessException {
+    private Object joinGame(Request req, Response res) throws DataAccessException, SQLException {
         String authToken = req.headers("Authorization");
         if (!dataAccess.isValidAuth(authToken)){
             res.status(401);
@@ -96,7 +98,7 @@ public class Server {
         }
 
     }
-    private Object listGames(Request req, Response res) throws DataAccessException {
+    private Object listGames(Request req, Response res) throws DataAccessException, SQLException {
         String authToken = req.headers("Authorization");
         if(!dataAccess.isValidAuth(authToken)){
             res.status(401);

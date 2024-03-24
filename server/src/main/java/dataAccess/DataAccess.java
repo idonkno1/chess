@@ -4,28 +4,29 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 
+import java.sql.SQLException;
 import java.util.Collection;
 
 public interface DataAccess {
-    boolean isValidAuth(String authToken) throws DataAccessException;
+    boolean isValidAuth(String authToken) throws DataAccessException, SQLException;
 
-    UserData createUser(UserData userData) throws DataAccessException;
+    UserData createUser(UserData userData);
 
-    UserData getUser(String username) throws DataAccessException;
+    UserData getUser(String username);
 
-    GameData createGame(String gameName) throws DataAccessException;
+    GameData createGame(String gameName);
 
-    Collection<GameData> listGames() throws DataAccessException;
+    Collection<GameData> listGames();
 
-    GameData getGame(int gameId) throws DataAccessException;
+    GameData getGame(int gameId);
 
-    AuthData createAuthToken(String username) throws DataAccessException;
+    AuthData createAuthToken(String username);
 
-    AuthData getAuthToken(String authToken) throws DataAccessException;
+    AuthData getAuthToken(String authToken);
 
-    void deleteAuthToken(String authToken) throws DataAccessException;
+    void deleteAuthToken(String authToken);
 
-    void clearDAO();
+    void clearDAO() throws DataAccessException;
 
-    void updateGame(GameData updatedGame) throws DataAccessException;
+    void updateGame(GameData updatedGame);
 }

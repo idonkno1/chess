@@ -63,6 +63,4 @@ public class MemoryDataAccess implements DataAccess{
         games.clear();
         authTokens.clear();
     }
-
-
 }
