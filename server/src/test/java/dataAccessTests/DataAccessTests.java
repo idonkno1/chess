@@ -1,5 +1,6 @@
 package dataAccessTests;
 
+import chess.ChessGame;
 import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
 import dataAccess.MemoryDataAccess;
@@ -11,6 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.sql.SQLException;
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -129,6 +131,40 @@ public class DataAccessTests {
         assertTrue(dataAccess.listGames().isEmpty());
         assertNull(dataAccess.getUser("username"));
         assertNull(dataAccess.getAuthToken("someAuthToken"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(classes = {MemoryDataAccess.class, MySqlDataAccess.class})
+    void updateGame_ValidGame_UpdatesSuccessfully(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
+        DataAccess dataAccess = getDataAccess(dataAccessClass);
+        // Create a game to update
+        String initialGameName = "Initial Game";
+        GameData game = dataAccess.createGame(initialGameName);
+        assertNotNull(game, "Precondition failed: game should be created successfully.");
+
+        // Update the game
+        ChessGame updatedGameState = new ChessGame(); // Assuming some state changes
+        GameData updatedGame = new GameData(game.gameID(), "player1", "player2", "Updated Game", updatedGameState);
+        assertDoesNotThrow(() -> dataAccess.updateGame(updatedGame), "Game should update without throwing an exception.");
+
+        // Fetch the updated game and verify changes
+        GameData fetchedGame = dataAccess.getGame(game.gameID());
+        assertNotNull(fetchedGame, "Updated game should exist.");
+        assertEquals("player1", fetchedGame.whiteUsername(), "White username should be updated.");
+        assertEquals("player2", fetchedGame.blackUsername(), "Black username should be updated.");
+    }
+    @ParameterizedTest
+    @ValueSource(classes = {MySqlDataAccess.class})
+    void updateGame_NonexistentGame_DoesNotThrowException(Class<? extends DataAccess> dataAccessClass) throws DataAccessException {
+        DataAccess dataAccess = getDataAccess(dataAccessClass);
+
+        ChessGame gameToUpdateState = new ChessGame(); // Assuming some state
+        GameData gameToUpdate = new GameData(99999, "nonexistentPlayer1", "nonexistentPlayer2", "Nonexistent Game", gameToUpdateState);
+
+        assertDoesNotThrow(() -> dataAccess.updateGame(gameToUpdate), "Updating a nonexistent game should not throw an exception.");
+
+        Collection<GameData> allGames = dataAccess.listGames();
+        assertTrue(allGames.stream().noneMatch(g -> "Nonexistent Game".equals(g.gameName())), "No games should be updated to the nonexistent game name.");
     }
 }
 
