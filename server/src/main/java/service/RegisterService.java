@@ -16,8 +16,8 @@ public class RegisterService {
         String authToken = String.valueOf(dataAccess.createAuthToken(username).authToken());
 
         HashMap<String, String> response = new HashMap<>();
-        response.put("username", username);
         response.put("authToken", authToken);
+        response.put("username", username); //switched these two if tests dont pass
         return response;
     }
 }

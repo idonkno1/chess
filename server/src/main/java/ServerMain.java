@@ -1,6 +1,6 @@
 import server.Server;
 
-public class Main {
+public class ServerMain {
     public static void main(String[] args) {
         try {
             var port = 8080;

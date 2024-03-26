@@ -25,8 +25,7 @@ public class ChessGame {
     /**
      * @return Which team's turn it is
      */
-    public TeamColor getTeamTurn() {
-        return teamTurn;
+    public TeamColor getTeamTurn() {return teamTurn;
     }
 
     /**
@@ -34,8 +33,7 @@ public class ChessGame {
      *
      * @param team the team whose turn it is
      */
-    public void setTeamTurn(TeamColor team) {
-        this.teamTurn = teamTurn;
+    public void setTeamTurn(TeamColor team) {this.teamTurn = teamTurn;
     }
 
     /**
@@ -256,7 +254,6 @@ public class ChessGame {
                 if(kingPosition != null) break;
             }
         }
-
 
         for (var row = 1; row <= 8; row++) {
             for (var col = 1; col <= 8; col++) {

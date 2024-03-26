@@ -1,13 +1,12 @@
 package server;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
 import dataAccess.MySqlDataAccess;
 import model.GameData;
 import model.JoinReqData;
+import model.LoginReqData;
 import model.UserData;
 import service.*;
 import spark.Request;
@@ -67,7 +66,7 @@ public class Server {
         try {
             GameData game = createGameService.createGame(gameName);
             res.status(200);
-            res.type("application.json");
+            res.type("application/json");
             return new Gson().toJson(Map.of("gameID", game.gameID()));
         }catch (Exception e){
             res.status(400);
@@ -90,6 +89,7 @@ public class Server {
         try{
             joinGameService.joinGame(joinReq, authToken);
             res.status(200);
+            res.type("application/json");
             return new Gson().toJson(Map.of("success", true));
 
         } catch (Exception e) {
@@ -111,11 +111,10 @@ public class Server {
     }
     private Object login(Request req, Response res) {
 
-        var loginInfo = new Gson().fromJson(req.body(), JsonElement.class);
+        var loginInfo = new Gson().fromJson(req.body(), LoginReqData.class);
 
-        JsonObject obj = loginInfo.getAsJsonObject();
-        String username = obj.get("username").getAsString();
-        String password = obj.get("password").getAsString();
+        String username = loginInfo.username();
+        String password = loginInfo.password();
 
         try{
             HashMap<String, String> userSession = loginService.loginUser(username, password);
