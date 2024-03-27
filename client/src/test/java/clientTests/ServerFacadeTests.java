@@ -115,6 +115,22 @@ public class ServerFacadeTests {
     }
 
     @Test
+    public void listGames_WithValidAuthToken_ReturnsIncorrectLengthGamesArray() throws ResponseException {
+        // Setup: Assume valid authToken and the server has mock games data to return
+        UserData userData = new UserData("testuser", "password", "testuser@example.com");
+        AuthData authData = facade.register(userData);
+        GameData gameData = new GameData(0, "player1", null, "New Game", new ChessGame());
+
+        int gameId = facade.createGame(gameData, authData.authToken());
+        // Test: Request to list games
+        GameData[] games = facade.listGames(authData.authToken());
+
+        // Verify: Check if the returned array is not null and contains games data
+        Assertions.assertNotNull(games, "Returned games array should not be null.");
+        Assertions.assertFalse(games.length == 0, "Games array should contain at least one game.");
+    }
+
+    @Test
     public void createGame_WithValidData_ReturnsGameId() throws ResponseException {
         // Setup: Valid game data and authToken
         UserData userData = new UserData("testuser", "password", "testuser@example.com");
