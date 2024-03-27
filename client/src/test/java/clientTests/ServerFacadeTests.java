@@ -46,6 +46,35 @@ public class ServerFacadeTests {
     }
 
     @Test
+    public void register_WithExistingUsername_ThrowsResponseException() throws ResponseException {
+        // Assuming server is set up to reject duplicate usernames
+        UserData userData1 = new UserData("existingUser", "password", "testuser@example.com");
+        AuthData authData = facade.register(userData1);
+
+        UserData userData2 = new UserData("existingUser", "password", "user@example.com");
+        Assertions.assertThrows(ResponseException.class, () -> facade.register(userData2),
+                "Expected ResponseException due to duplicate username.");
+    }
+
+    @Test
+    public void logout_WithInvalidAuthToken_ThrowsResponseException() {
+        // Assuming server is set up to validate auth tokens on logout
+        String invalidAuthToken = "invalidToken";
+        Assertions.assertThrows(ResponseException.class, () -> facade.logout(invalidAuthToken),
+                "Expected ResponseException due to invalid auth token.");
+    }
+
+
+    @Test
+    public void login_WithIncorrectCredentials_ThrowsResponseException() {
+        // Assuming server is set up to validate login credentials
+        LoginReqData loginReqData = new LoginReqData("user", "wrongPassword");
+        Assertions.assertThrows(ResponseException.class, () -> facade.login(loginReqData),
+                "Expected ResponseException due to incorrect login credentials.");
+    }
+
+
+    @Test
     public void login_ValidCredentials_ShouldReturnAuthData() throws ResponseException {
         // Setup: Assuming a user "testuser" with password "password" is already registered
 
