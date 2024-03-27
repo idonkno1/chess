@@ -145,6 +145,17 @@ public class ServerFacadeTests {
     }
 
     @Test
+    public void createGame_WithInvalidData_ThrowsResponseException() {
+        // Assuming server rejects game creation due to invalid data (e.g., missing game name)
+        String authToken = "validAuthToken"; // Assuming this token is considered valid for the test
+        GameData invalidGameData = new GameData(0, null, null, "", new ChessGame()); // Invalid because the game name is empty
+
+        Assertions.assertThrows(ResponseException.class,
+                () -> facade.createGame(invalidGameData, authToken),
+                "Expected ResponseException due to invalid game data.");
+    }
+
+    @Test
     public void joinGame_WithValidData_ReturnsUpdatedGameData() throws ResponseException {
         // Setup: Assume valid authToken, existing gameId and the server can handle game joining
         UserData userData = new UserData("testuser", "password", "testuser@example.com");
@@ -158,6 +169,17 @@ public class ServerFacadeTests {
 
         // Verify: Check if the returned GameData reflects a successful join
         Assertions.assertNotNull(joinedGame, "Joined game data should not be null.");
+    }
+
+    @Test
+    public void joinGame_NonexistentGameOrUnauthorized_ThrowsResponseException() {
+        // Assuming server rejects joining non-existent games or unauthorized requests
+        String authToken = "validAuthToken"; // Assuming this token is valid
+        JoinReqData joinReqData = new JoinReqData("WHITE", 999); // Non-existent game ID
+
+        Assertions.assertThrows(ResponseException.class,
+                () -> facade.joinGame(joinReqData, authToken),
+                "Expected ResponseException due to trying to join a non-existent game or unauthorized action.");
     }
 
 
