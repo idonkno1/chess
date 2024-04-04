@@ -33,7 +33,7 @@ public class MemoryDataAccess implements DataAccess{
     }
     public Collection<GameData> listGames() {return games.values();}
 
-    public void updateGame(GameData gameToBeUpdated) {
+    public ChessGame updateGame(GameData gameToBeUpdated) {
         GameData game = games.get(gameToBeUpdated.gameID());
         if (game.whiteUsername() == null){
             game = game.updateWhiteUsername(gameToBeUpdated.whiteUsername());
@@ -43,6 +43,7 @@ public class MemoryDataAccess implements DataAccess{
         }
         game = game.updateGameState(gameToBeUpdated.game());
         games.put(game.gameID(), game);
+        return null;
     }
     public GameData getGame(int gameID) {return games.get(gameID);}
 

@@ -1,16 +1,17 @@
 package ui;
 
+import ui.websocket.ServerMessageHandler;
+import webSocketMessages.serverMessages.ServerMessage;
+
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class Repl{
+public class Repl implements ServerMessageHandler{
 
     private final Client client;
 
-    public Repl(String serverUrl) {
-        client = new Client(serverUrl);
-    }
+    public Repl(String serverUrl) {client = new Client(serverUrl, this);}
 
     public void run() {
         System.out.println("Welcome to 240 Chess. Type Help to get started.");
@@ -37,4 +38,10 @@ public class Repl{
         System.out.print("\n" + RESET + ">>> " + GREEN);
     }
 
+    @Override
+    public void notify(ServerMessage serverMessage) {
+        System.out.println(RED + serverMessage.getServerMessageType());
+        printPrompt();
+
+    }
 }

@@ -1,5 +1,6 @@
 package ui.server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import model.*;
 
@@ -52,9 +53,9 @@ public class ServerFacade {
         return this.makeRequest("POST", path, gameName, GameData.class, authToken).gameID();
     }
 
-    public GameData joinGame(JoinReqData joinReqData, String authToken) throws ResponseException {
+    public ChessGame joinGame(JoinReqData joinReqData, String authToken) throws ResponseException {
         var path = "/game";
-        return this.makeRequest("PUT", path, joinReqData, GameData.class, authToken);
+        return this.makeRequest("PUT", path, joinReqData, ChessGame.class, authToken);
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws ResponseException {

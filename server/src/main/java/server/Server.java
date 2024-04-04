@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import dataAccess.DataAccess;
 import dataAccess.DataAccessException;
@@ -87,10 +88,10 @@ public class Server {
             return new Gson().toJson(Map.of("message", "Error: bad request"));
         }
         try{
-            joinGameService.joinGame(joinReq, authToken);
+            ChessGame game =  joinGameService.joinGame(joinReq, authToken);
             res.status(200);
             res.type("application/json");
-            return new Gson().toJson(Map.of("success", true));
+            return new Gson().toJson(game);
 
         } catch (Exception e) {
             res.status(403);

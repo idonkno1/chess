@@ -192,7 +192,7 @@ public class MySqlDataAccess implements DataAccess{
     }
 
 
-    public void updateGame(GameData updatedGame) {
+    public ChessGame updateGame(GameData updatedGame) {
         var sql = "UPDATE games SET whiteUsername = ?, blackUsername = ?, game = ? WHERE gameID = ?";
         try (var conn = DatabaseManager.getConnection();
              var ps = conn.prepareStatement(sql)) {
@@ -201,6 +201,7 @@ public class MySqlDataAccess implements DataAccess{
             ps.setString(3, serializeChessGame(updatedGame.game()));
             ps.setInt(4, updatedGame.gameID());
             ps.executeUpdate();
+            return updatedGame.game();
         } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);
         }

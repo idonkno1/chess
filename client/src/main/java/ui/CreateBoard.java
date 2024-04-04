@@ -1,9 +1,12 @@
 package ui;
 
-
+import chess.ChessBoard;
+import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 
 public class CreateBoard {
-    private static final String[][] board = new String[8][8];
+    private static final String[][] visualboard = new String[8][8];
     private static final String DARK_SQUARE = EscapeSequences.SET_BG_COLOR_DARK_GREY;
     private static final String LIGHT_SQUARE = EscapeSequences.SET_BG_COLOR_LIGHT_GREY;
     private static final String RED = EscapeSequences.SET_TEXT_COLOR_WHITE;
@@ -11,25 +14,35 @@ public class CreateBoard {
     private static final String RESET = EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR;
 
 
-    public static void initializeBoard() {
+    public static void initializeBoard(ChessBoard chessBoard) {
         // Initialize empty squares
-        for (int i = 2; i < 6; i++) {
+        for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                board[i][j] = EscapeSequences.EMPTY;
+                ChessPiece piece = chessBoard.getPiece(new ChessPosition(i+1, j+1));
+                visualboard[i][j] = pieceToSymbol(piece);
             }
         }
+    }
 
-        // Initialize black pieces
-        board[0] = new String[]{EscapeSequences.BLACK_ROOK, EscapeSequences.BLACK_KNIGHT, EscapeSequences.BLACK_BISHOP, EscapeSequences.BLACK_QUEEN, EscapeSequences.BLACK_KING, EscapeSequences.BLACK_BISHOP, EscapeSequences.BLACK_KNIGHT, EscapeSequences.BLACK_ROOK};
-        for (int j = 0; j < 8; j++) {
-            board[1][j] = EscapeSequences.BLACK_PAWN;
+    private static String pieceToSymbol(ChessPiece piece) {
+        if (piece == null) return EscapeSequences.EMPTY;
+        switch (piece.getPieceType()) {
+            case PAWN:
+                return piece.getTeamColor() == ChessGame.TeamColor.BLACK ? EscapeSequences.WHITE_PAWN : EscapeSequences.BLACK_PAWN;
+            case ROOK:
+                return piece.getTeamColor() == ChessGame.TeamColor.BLACK ? EscapeSequences.WHITE_ROOK : EscapeSequences.BLACK_ROOK;
+            case KNIGHT:
+                return piece.getTeamColor() == ChessGame.TeamColor.BLACK ? EscapeSequences.WHITE_KNIGHT : EscapeSequences.BLACK_KNIGHT;
+            case BISHOP:
+                return piece.getTeamColor() == ChessGame.TeamColor.BLACK ? EscapeSequences.WHITE_BISHOP : EscapeSequences.BLACK_BISHOP;
+            case QUEEN:
+                return piece.getTeamColor() == ChessGame.TeamColor.BLACK ? EscapeSequences.WHITE_QUEEN : EscapeSequences.BLACK_QUEEN;
+            case KING:
+                return piece.getTeamColor() == ChessGame.TeamColor.BLACK ? EscapeSequences.WHITE_KING : EscapeSequences.BLACK_KING;
+            default:
+                return EscapeSequences.EMPTY;
         }
 
-        // Initialize white pieces
-        board[7] = new String[]{EscapeSequences.WHITE_ROOK, EscapeSequences.WHITE_KNIGHT, EscapeSequences.WHITE_BISHOP, EscapeSequences.WHITE_QUEEN, EscapeSequences.WHITE_KING, EscapeSequences.WHITE_BISHOP, EscapeSequences.WHITE_KNIGHT, EscapeSequences.WHITE_ROOK};
-        for (int j = 0; j < 8; j++) {
-            board[6][j] = EscapeSequences.WHITE_PAWN;
-        }
     }
 
     private static String formatSquare(String piece, int i, int j) {
@@ -38,8 +51,8 @@ public class CreateBoard {
         return squareColor + piece + RESET;
     }
 
-    public static void printBoard(String isWhite) {
-        initializeBoard();
+    public static void printBoard(ChessBoard board, String isWhite) {
+        initializeBoard(board);
         System.out.print(EscapeSequences.ERASE_SCREEN);
         printLabels(isWhite);
         for (int i = 0; i < 8; i++) {
@@ -48,7 +61,7 @@ public class CreateBoard {
             System.out.print(WHITE_SQUARE + " " + RED + (row + 1) + " " + RESET);
             for (int j = 0; j < 8; j++) {
                 int col = isWhite.equals("WHITE") ? j : 7 - j;
-                String piece = board[row][col];
+                String piece = visualboard[row][col];
                 System.out.print(formatSquare(piece, row, col));
             }
             System.out.println(WHITE_SQUARE + " " + RED + (row + 1) + " " + RESET);
@@ -79,8 +92,10 @@ public class CreateBoard {
     }
 
     public static void main(String[] args) {
-        printBoard("WHITE");
-        printBoard("BLACK");
+        ChessBoard chessBoard = new ChessBoard();
+        chessBoard.resetBoard();
+        printBoard(chessBoard,"WHITE");
+        printBoard(chessBoard,"BLACK");
 
     }
 }

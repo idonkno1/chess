@@ -8,6 +8,8 @@ import model.LoginReqData;
 import model.UserData;
 import ui.server.ResponseException;
 import ui.server.ServerFacade;
+import ui.websocket.ServerMessageHandler;
+import ui.websocket.WebSocketFacade;
 
 import java.util.Arrays;
 
@@ -18,14 +20,16 @@ public class Client {
     private String authToken = null;
     private String gameName = null;
     private int gameID;
-
-    //private final ServerMessageHandler notificationHandler;
-    //private WebSocketFacade ws;
+    private final String serverUrl;
+    private final ServerMessageHandler serverMessageHandler;
+    private WebSocketFacade ws;
     private State state = State.SIGNEDOUT;
 
 
-    public Client(String serverUrl) {
+    public Client(String serverUrl, ServerMessageHandler serverMessageHandler) {
         server = new ServerFacade(serverUrl);
+        this.serverUrl = serverUrl;
+        this.serverMessageHandler = serverMessageHandler;
     }
 
     public String eval(String input) {
@@ -54,32 +58,51 @@ public class Client {
         }
     }
 
-    private String leaveGame() {
-        return null;
+    private String leaveGame() throws ResponseException {
+        assertGaming();
+        ws.leaveGame();
+        return "\n";
+
     }
 
-    private String highlightMove(String[] params) {
-        return null;
+    private String highlightMove(String[] params) throws ResponseException {
+        assertGaming();
+        var piece = params[0].toUpperCase();
+        ws.highlightMove(piece);
+        return "\n";
     }
 
-    private String resignGame() {
-        return null;
+    private String resignGame() throws ResponseException {
+        assertPlaying();
+        ws.resignGame();
+        return "\n";
+
     }
 
-    private String makeMove(String[] params) {
-        return null;
+    private String makeMove(String[] params) throws ResponseException {
+        assertPlaying();
+        var currentSquare = params[0];
+        var nextSquare = params[1];
+        ws.makeMove(currentSquare, nextSquare);
+        return "\n";
     }
 
-    private String redrawBoard() {
-        return null;
+    private String redrawBoard() throws ResponseException {
+        assertGaming();
+        ws.redrawBoard();
+        return "\n";
     }
 
     private String observeGame(String[] params) throws ResponseException {
         assertSignedIn();
         gameID = Integer.parseInt(params[0]);
         var gameJoined = new JoinReqData(null, gameID);
+
         server.joinGame(gameJoined, authToken);
-        CreateBoard.printBoard("WHITE");
+        //ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+        //ws.joinObserver(authToken);
+
+        //CreateBoard.printBoard("WHITE");
         state = State.OBSERVING;
         return String.format("You are observing a chess game. Assigned chess ID: %d", gameID);
     }
@@ -87,10 +110,15 @@ public class Client {
     private String joinGame(String[] params) throws ResponseException {
         assertSignedIn();
         gameID = Integer.parseInt(params[0]);
+
         var playerColor = params[1].toUpperCase();
         var gameJoined = new JoinReqData(playerColor, gameID);
-        server.joinGame(gameJoined, authToken);
-        CreateBoard.printBoard(playerColor);
+
+        ChessGame game =  server.joinGame(gameJoined, authToken);
+        //ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+        //ws.joinPlayer(authToken);
+
+        CreateBoard.printBoard(game.getBoard(), playerColor);
         state = State.PLAYING;
         return String.format("You are playing a chess game as %s. Assigned chess ID: %d", playerColor, gameID);
     }
@@ -188,6 +216,18 @@ public class Client {
     }
     private void assertSignedIn() throws ResponseException {
         if (state == State.SIGNEDOUT) {
+            throw new ResponseException(400, "You must sign in");
+        }
+    }
+
+    private void assertPlaying() throws ResponseException {
+        if (state != State.PLAYING) {
+            throw new ResponseException(400, "You must sign in");
+        }
+    }
+
+    private void assertGaming() throws ResponseException {
+        if (state != State.PLAYING | state != State.OBSERVING) {
             throw new ResponseException(400, "You must sign in");
         }
     }

@@ -38,10 +38,30 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-
-
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
 
+    }
+
+    public void joinObserver(String authToken) {
+
+    }
+
+    public void joinPlayer(String authToken) {
+    }
+
+    public void leaveGame() {
+    }
+
+    public void highlightMove(String piece) {
+    }
+
+    public void resignGame() {
+    }
+
+    public void makeMove(String currentSquare, String nextSquare) {
+    }
+
+    public void redrawBoard() {
     }
 }

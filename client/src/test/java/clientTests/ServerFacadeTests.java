@@ -141,7 +141,7 @@ public class ServerFacadeTests {
 
         int gameId = facade.createGame(gameData, authData.authToken());
 
-        GameData joinedGame = facade.joinGame(joinReqData, authData.authToken());
+        ChessGame joinedGame = facade.joinGame(joinReqData, authData.authToken());
 
         Assertions.assertNotNull(joinedGame, "Joined game data should not be null.");
     }

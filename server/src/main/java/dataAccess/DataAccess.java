@@ -1,5 +1,6 @@
 package dataAccess;
 
+import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -28,5 +29,5 @@ public interface DataAccess {
 
     void clearDAO() throws DataAccessException;
 
-    void updateGame(GameData updatedGame);
+    ChessGame updateGame(GameData updatedGame);
 }
