@@ -6,8 +6,8 @@ import model.GameData;
 import model.JoinReqData;
 import model.LoginReqData;
 import model.UserData;
-import server.ResponseException;
-import server.ServerFacade;
+import ui.server.ResponseException;
+import ui.server.ServerFacade;
 
 import java.util.Arrays;
 
@@ -19,7 +19,7 @@ public class Client {
     private String gameName = null;
     private int gameID;
 
-    //private final NotificationHandler notificationHandler;
+    //private final ServerMessageHandler notificationHandler;
     //private WebSocketFacade ws;
     private State state = State.SIGNEDOUT;
 
@@ -41,6 +41,11 @@ public class Client {
                 case "list" -> listGame();
                 case "join" -> joinGame(params);
                 case "observe" -> observeGame(params);
+                case "redraw" -> redrawBoard();
+                case "move" -> makeMove(params);
+                case "resign" -> resignGame();
+                case "highlight" -> highlightMove(params);
+                case "leave" -> leaveGame();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -49,12 +54,33 @@ public class Client {
         }
     }
 
+    private String leaveGame() {
+        return null;
+    }
+
+    private String highlightMove(String[] params) {
+        return null;
+    }
+
+    private String resignGame() {
+        return null;
+    }
+
+    private String makeMove(String[] params) {
+        return null;
+    }
+
+    private String redrawBoard() {
+        return null;
+    }
+
     private String observeGame(String[] params) throws ResponseException {
         assertSignedIn();
         gameID = Integer.parseInt(params[0]);
         var gameJoined = new JoinReqData(null, gameID);
         server.joinGame(gameJoined, authToken);
         CreateBoard.printBoard("WHITE");
+        state = State.OBSERVING;
         return String.format("You are observing a chess game. Assigned chess ID: %d", gameID);
     }
 
@@ -65,6 +91,7 @@ public class Client {
         var gameJoined = new JoinReqData(playerColor, gameID);
         server.joinGame(gameJoined, authToken);
         CreateBoard.printBoard(playerColor);
+        state = State.PLAYING;
         return String.format("You are playing a chess game as %s. Assigned chess ID: %d", playerColor, gameID);
     }
 
@@ -126,6 +153,25 @@ public class Client {
             return """
                     - register <USERNAME> <PASSWORD> <EMAIL> - create an account
                     - login <USERNAME> <PASSWORD> - to play chess
+                    - help - possible commands
+                    - quit
+                    """;
+        }
+        if(state == State.PLAYING){
+            return """
+                    - move <CURRENT SQUARE> <NEXT SQUARE> ex: e3 e4
+                    - highlight <PIECE> (knight or n) - highlights possible moves for given piece
+                    - redraw - regenerates board
+                    - resign - give up
+                    - leave - straight up leave the table
+                    - help - possible commands
+                    """;
+        }
+        if (state == State.OBSERVING){
+            return """
+                    - highlight <PIECE> (king or k) - highlights possible moves for given piece
+                    - redraw - regenerates board
+                    - leave - leave game
                     - help - possible commands
                     - quit
                     """;
