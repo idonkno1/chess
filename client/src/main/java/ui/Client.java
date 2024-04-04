@@ -2,16 +2,13 @@ package ui;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import model.GameData;
-import model.JoinReqData;
-import model.LoginReqData;
-import model.UserData;
-import ui.server.ResponseException;
-import ui.server.ServerFacade;
-import ui.websocket.ServerMessageHandler;
-import ui.websocket.WebSocketFacade;
+import model.*;
+
+import ui.server.*;
+import ui.websocket.*;
 
 import java.util.Arrays;
+
 
 public class Client {
     private final ServerFacade server;
@@ -98,11 +95,11 @@ public class Client {
         gameID = Integer.parseInt(params[0]);
         var gameJoined = new JoinReqData(null, gameID);
 
-        server.joinGame(gameJoined, authToken);
-        //ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+        ChessGame game =  server.joinGame(gameJoined, authToken);
+        ws = new WebSocketFacade(serverUrl, serverMessageHandler);
         //ws.joinObserver(authToken);
 
-        //CreateBoard.printBoard("WHITE");
+        CreateBoard.printBoard(game.getBoard(), "WHITE");
         state = State.OBSERVING;
         return String.format("You are observing a chess game. Assigned chess ID: %d", gameID);
     }
@@ -115,7 +112,7 @@ public class Client {
         var gameJoined = new JoinReqData(playerColor, gameID);
 
         ChessGame game =  server.joinGame(gameJoined, authToken);
-        //ws = new WebSocketFacade(serverUrl, serverMessageHandler);
+        ws = new WebSocketFacade(serverUrl, serverMessageHandler);
         //ws.joinPlayer(authToken);
 
         CreateBoard.printBoard(game.getBoard(), playerColor);

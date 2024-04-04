@@ -3,8 +3,10 @@ package websocket;
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
+import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import webSocketMessages.userCommands.UserGameCommand;
 
+@WebSocket
 public class WebSocketHandler {
     private final ConnectionManager conn = new ConnectionManager();
 
@@ -22,23 +24,24 @@ public class WebSocketHandler {
         }
     }
 
-    private void resignGame() {
-    }
-
-    private void leaveGame() {
+    public void resignGame() {
 
     }
 
-    private void makeMove() {
+    public void leaveGame() {
 
     }
 
-    private void observeGame() {
+    public void makeMove() {
 
     }
 
-    private void joinGame() {
+    public void observeGame() {
 
+    }
+
+    public void joinGame() {
+        int i = 1 + 1;
     }
 
 }

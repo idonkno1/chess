@@ -13,7 +13,6 @@ import java.net.URISyntaxException;
 public class WebSocketFacade extends Endpoint {
 
     Session session;
-
     ServerMessageHandler serverMessageHandler;
 
     public WebSocketFacade(String url, ServerMessageHandler serverMessageHandler) throws ResponseException {
@@ -23,7 +22,7 @@ public class WebSocketFacade extends Endpoint {
             this.serverMessageHandler = serverMessageHandler;
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            this.session = container.connectToServer(this, socketURI);
+            this.session = container.connectToServer(this, socketURI); // not connecting
 
             //set message handler
             this.session.addMessageHandler(new MessageHandler.Whole<String>(){

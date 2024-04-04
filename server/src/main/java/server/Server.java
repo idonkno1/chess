@@ -13,6 +13,7 @@ import service.*;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
+import websocket.WebSocketHandler;
 
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ public class Server {
     private final LoginService loginService = new LoginService(dataAccess);
     private final LogoutService logoutService = new LogoutService(dataAccess);
     private final RegisterService registerService = new RegisterService(dataAccess);
+    private final WebSocketHandler webSocketHandler = new WebSocketHandler();
 
     public Server() {
 
@@ -39,6 +41,7 @@ public class Server {
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
+        Spark.webSocket("/connect", webSocketHandler);
 
         Spark.delete("/db", this::clear); //clear
         Spark.post("/user", this::register); //register
@@ -89,6 +92,7 @@ public class Server {
         }
         try{
             ChessGame game =  joinGameService.joinGame(joinReq, authToken);
+            webSocketHandler.joinGame();
             res.status(200);
             res.type("application/json");
             return new Gson().toJson(game);
