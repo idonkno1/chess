@@ -1,12 +1,19 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import com.google.gson.Gson;
-import model.*;
+import model.GameData;
+import model.JoinReqData;
+import model.LoginReqData;
+import model.UserData;
+import ui.server.ResponseException;
+import ui.server.ServerFacade;
+import ui.websocket.ServerMessageHandler;
+import ui.websocket.WebSocketFacade;
 
-import ui.server.*;
-import ui.websocket.*;
-
+import java.io.IOException;
 import java.util.Arrays;
 
 
@@ -15,7 +22,6 @@ public class Client {
 
     private String visitorName = null;
     private String authToken = null;
-    private String gameName = null;
     private int gameID;
     private final String serverUrl;
     private final ServerMessageHandler serverMessageHandler;
@@ -55,9 +61,10 @@ public class Client {
         }
     }
 
-    private String leaveGame() throws ResponseException {
+    private String leaveGame() throws ResponseException, IOException {
         assertGaming();
-        ws.leaveGame();
+        ws.leaveGame(authToken, gameID);
+        state = State.SIGNEDIN;
         return "\n";
 
     }
@@ -65,46 +72,48 @@ public class Client {
     private String highlightMove(String[] params) throws ResponseException {
         assertGaming();
         var piece = params[0].toUpperCase();
-        ws.highlightMove(piece);
+        ws.highlightMove(authToken, gameID, piece);
         return "\n";
     }
 
-    private String resignGame() throws ResponseException {
+    private String resignGame() throws ResponseException, IOException {
         assertPlaying();
-        ws.resignGame();
+        ws.resignGame(authToken, gameID);
+        state = State.SIGNEDIN;
         return "\n";
 
     }
 
-    private String makeMove(String[] params) throws ResponseException {
+    private String makeMove(String[] params) throws ResponseException, IOException {
         assertPlaying();
-        var currentSquare = params[0];
-        var nextSquare = params[1];
-        ws.makeMove(currentSquare, nextSquare);
+        var currentSquare = comToPosition(params[0]);
+        var nextSquare = comToPosition(params[1]);
+        ChessMove chessMove = new ChessMove(currentSquare, nextSquare, null);
+        ws.makeMove(authToken, gameID, chessMove);
         return "\n";
     }
 
     private String redrawBoard() throws ResponseException {
         assertGaming();
-        ws.redrawBoard();
+        ws.redrawBoard(authToken, gameID);
         return "\n";
     }
 
-    private String observeGame(String[] params) throws ResponseException {
+    private String observeGame(String[] params) throws ResponseException, IOException {
         assertSignedIn();
         gameID = Integer.parseInt(params[0]);
         var gameJoined = new JoinReqData(null, gameID);
 
         ChessGame game =  server.joinGame(gameJoined, authToken);
         ws = new WebSocketFacade(serverUrl, serverMessageHandler);
-        //ws.joinObserver(authToken);
+        ws.joinObserver(authToken, gameID);
 
         CreateBoard.printBoard(game.getBoard(), "WHITE");
         state = State.OBSERVING;
         return String.format("You are observing a chess game. Assigned chess ID: %d", gameID);
     }
 
-    private String joinGame(String[] params) throws ResponseException {
+    private String joinGame(String[] params) throws ResponseException, IOException {
         assertSignedIn();
         gameID = Integer.parseInt(params[0]);
 
@@ -113,7 +122,7 @@ public class Client {
 
         ChessGame game =  server.joinGame(gameJoined, authToken);
         ws = new WebSocketFacade(serverUrl, serverMessageHandler);
-        //ws.joinPlayer(authToken);
+        ws.joinPlayer(authToken, gameID, playerColor);
 
         CreateBoard.printBoard(game.getBoard(), playerColor);
         state = State.PLAYING;
@@ -136,7 +145,7 @@ public class Client {
         if (params.length == 1){
             var game = new GameData(0, null, null, params[0], new ChessGame());
             int gameID = server.createGame(game, authToken);
-            gameName = params[0];
+            String gameName = params[0];
             return String.format("You created chess game named %s. Assigned chess ID: %d", gameName, gameID);
         }
         throw new ResponseException(400, "Expected: <gameName>");
@@ -219,13 +228,32 @@ public class Client {
 
     private void assertPlaying() throws ResponseException {
         if (state != State.PLAYING) {
-            throw new ResponseException(400, "You must sign in");
+            throw new ResponseException(400, "You must be playing a game");
         }
     }
 
     private void assertGaming() throws ResponseException {
-        if (state != State.PLAYING | state != State.OBSERVING) {
+        if (state != State.PLAYING || state != State.OBSERVING) {
             throw new ResponseException(400, "You must sign in");
         }
     }
+
+    public static ChessPosition comToPosition(String location){
+        var col = location.substring(0, 1).toLowerCase();
+        int row = Integer.parseInt(location.substring(1));
+
+        var colInt = switch (col) {
+            case "a" -> 1;
+            case "b" -> 2;
+            case "c" -> 3;
+            case "d" -> 4;
+            case "e" -> 5;
+            case "f" -> 6;
+            case "g" -> 7;
+            case "h" -> 8;
+            default -> throw new IllegalStateException("Unexpected value: " + col);
+        };
+        return new ChessPosition(row, colInt);
+    }
+
 }

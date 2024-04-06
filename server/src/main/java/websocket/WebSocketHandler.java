@@ -8,12 +8,12 @@ import webSocketMessages.userCommands.UserGameCommand;
 
 @WebSocket
 public class WebSocketHandler {
-    private final ConnectionManager conn = new ConnectionManager();
+    private final ConnectionManager connections = new ConnectionManager();
 
     @OnWebSocketMessage
     public void onMessage(Session session, String msg) throws Exception {
         UserGameCommand command = new Gson().fromJson(msg, UserGameCommand.class);
-        if (conn != null) {
+        if (connections != null) {
             switch (command.getCommandType()) {
                 case JOIN_PLAYER -> joinGame();
                 case JOIN_OBSERVER -> observeGame();
@@ -41,7 +41,7 @@ public class WebSocketHandler {
     }
 
     public void joinGame() {
-        int i = 1 + 1;
+
     }
 
 }

@@ -1,8 +1,11 @@
 package ui.websocket;
 
+import chess.ChessMove;
 import com.google.gson.Gson;
 import ui.server.ResponseException;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.MakeMove;
+import webSocketMessages.userCommands.UserGameCommand;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -42,25 +45,35 @@ public class WebSocketFacade extends Endpoint {
 
     }
 
-    public void joinObserver(String authToken) {
-
+    public void joinObserver(String authToken, int gameID) throws IOException {
+        var command = new UserGameCommand(UserGameCommand.CommandType.JOIN_OBSERVER, authToken, gameID);
+        this.session.getBasicRemote().sendText(new Gson().toJson(command));
     }
 
-    public void joinPlayer(String authToken) {
+    public void joinPlayer(String authToken, int gameID, String playerColor) throws IOException {
+        var command = new UserGameCommand(UserGameCommand.CommandType.JOIN_PLAYER, authToken, gameID);
+        this.session.getBasicRemote().sendText(new Gson().toJson(command));
     }
 
-    public void leaveGame() {
+    public void leaveGame(String authToken, int gameID) throws IOException {
+        var command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
+        this.session.getBasicRemote().sendText(new Gson().toJson(command));
     }
 
-    public void highlightMove(String piece) {
+    public void highlightMove(String authToken, int gameID, String piece) {
     }
 
-    public void resignGame() {
+    public void resignGame(String authToken, int gameID) throws IOException {
+        var command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
+        this.session.getBasicRemote().sendText(new Gson().toJson(command));
     }
 
-    public void makeMove(String currentSquare, String nextSquare) {
+    public void makeMove(String authToken, int gameID, ChessMove chessMove) throws IOException {
+        var command = new MakeMove(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, chessMove);
+        this.session.getBasicRemote().sendText(new Gson().toJson(command));
     }
 
-    public void redrawBoard() {
+    public void redrawBoard(String authToken, int gameID) {
+
     }
 }
