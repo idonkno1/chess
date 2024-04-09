@@ -51,6 +51,7 @@ public class Repl implements ServerMessageHandler{
     }
 
     private void handleHighlight(HighlightMessage message, String playerCol) {
+        System.out.println(RED + "Game Loaded: ");
         var game = message.getGame().getBoard();
         var moves = message.getMoves();
         CreateBoard.printBoard(game, playerCol, moves);

@@ -10,6 +10,9 @@ public class CreateBoard {
     private static final String LIGHT_SQUARE = EscapeSequences.SET_BG_COLOR_LIGHT_GREY;
     private static final String RED = EscapeSequences.SET_TEXT_COLOR_WHITE;
     private static final String WHITE_SQUARE = EscapeSequences.SET_BG_COLOR_BROWN;
+
+    private static final String DARK_GREEN = EscapeSequences.SET_BG_COLOR_DARK_GREEN;
+    private static final String GREEN = EscapeSequences.SET_BG_COLOR_GREEN;
     private static final String RESET = EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR;
 
 
@@ -44,13 +47,31 @@ public class CreateBoard {
 
     }
 
-    private static String formatSquare(String piece, int i, int j) {
+    private static String formatSquare(String piece, int i, int j, boolean shouldHighlight, boolean current) {
         boolean isLightSquare = (i + j) % 2 == 0;
         String squareColor = isLightSquare ? DARK_SQUARE: LIGHT_SQUARE;
+        if (shouldHighlight) {
+            squareColor = isLightSquare ? DARK_GREEN: GREEN;
+        }
+        if(current){
+            squareColor = EscapeSequences.SET_BG_COLOR_YELLOW;
+        }
         return squareColor + piece + RESET;
     }
 
     public static void printBoard(ChessBoard board, String isWhite, Collection<ChessMove> moves) {
+        boolean[][] currentSquare = new boolean[8][8];
+        boolean[][] highlightSquares = new boolean[8][8];
+
+        if (moves != null) {
+            for (ChessMove move : moves) {
+                ChessPosition current = move.getStartPosition();
+                ChessPosition target = move.getEndPosition();
+                highlightSquares[target.getRow() - 1][target.getColumn() - 1] = true;
+                currentSquare[current.getRow() - 1][current.getColumn() - 1] = true;
+            }
+        }
+
         initializeBoard(board);
         System.out.print(EscapeSequences.ERASE_SCREEN);
         printLabels(isWhite);
@@ -61,7 +82,9 @@ public class CreateBoard {
             for (int j = 0; j < 8; j++) {
                 int col = isWhite.equals("WHITE") ? j : 7 - j;
                 String piece = visualboard[row][col];
-                System.out.print(formatSquare(piece, row, col));
+                boolean shouldHighlight = highlightSquares[row][col];
+                boolean current = currentSquare[row][col];
+                System.out.print(formatSquare(piece, row, col, shouldHighlight, current));
             }
             System.out.println(WHITE_SQUARE + " " + RED + (row + 1) + " " + RESET);
         }

@@ -2,10 +2,7 @@ package webSocketMessages;
 
 
 import com.google.gson.*;
-import webSocketMessages.serverMessages.ErrorMessage;
-import webSocketMessages.serverMessages.LoadGameMessage;
-import webSocketMessages.serverMessages.NotificationMessage;
-import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.serverMessages.*;
 
 import java.lang.reflect.Type;
 
@@ -23,6 +20,8 @@ public class ServerMessageDeserializer implements JsonDeserializer<ServerMessage
                 return context.deserialize(json, ErrorMessage.class);
             case NOTIFICATION:
                 return context.deserialize(json, NotificationMessage.class);
+            case HIGHLIGHT:
+                return context.deserialize(json, HighlightMessage.class);
             default:
                 throw new JsonParseException("Unknown type: " + type);
         }
