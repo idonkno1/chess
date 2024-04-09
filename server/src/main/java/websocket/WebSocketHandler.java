@@ -150,8 +150,6 @@ public class WebSocketHandler {
         }
         var gameNotification = new LoadGameMessage(gameData.game());
         connections.broadcast("", gameNotification);
-
-
     }
 
     public void observeGame(String authString, int gameID, Session session) throws SQLException, DataAccessException, IOException {
@@ -181,5 +179,4 @@ public class WebSocketHandler {
         var notification = new NotificationMessage(message);
         connections.broadcast(authData.username(), notification);
     }
-
 }
