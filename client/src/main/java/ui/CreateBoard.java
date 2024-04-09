@@ -47,7 +47,7 @@ public class CreateBoard {
 
     private static String formatSquare(String piece, int i, int j) {
         boolean isLightSquare = (i + j) % 2 == 0;
-        String squareColor = isLightSquare ? LIGHT_SQUARE : DARK_SQUARE;
+        String squareColor = isLightSquare ? DARK_SQUARE: LIGHT_SQUARE;
         return squareColor + piece + RESET;
     }
 

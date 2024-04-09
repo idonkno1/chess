@@ -30,4 +30,6 @@ public interface DataAccess {
     void clearDAO() throws DataAccessException;
 
     ChessGame updateGame(GameData updatedGame);
+
+    void deleteGame(int gameID);
 }

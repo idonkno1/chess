@@ -1,7 +1,7 @@
 package ui;
 
 import ui.websocket.ServerMessageHandler;
-import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.serverMessages.*;
 
 import java.util.Scanner;
 
@@ -34,14 +34,35 @@ public class Repl implements ServerMessageHandler{
         System.out.println();
     }
 
-    private void printPrompt() {
-        System.out.print("\n" + RESET + ">>> " + GREEN);
+    @Override
+    public void notify(ServerMessage serverMessage, String playerCol) {
+        if (serverMessage instanceof LoadGameMessage) {
+            handleLoadGame((LoadGameMessage) serverMessage, playerCol);
+        } else if (serverMessage instanceof ErrorMessage) {
+            handleError((ErrorMessage) serverMessage);
+        } else if (serverMessage instanceof NotificationMessage) {
+            handleNotification((NotificationMessage) serverMessage);
+        } else {
+            System.out.println(RED + "Unhandled server message type: " + serverMessage.getServerMessageType());
+        }
+        printPrompt();
     }
 
-    @Override
-    public void notify(ServerMessage serverMessage) {
-        System.out.println(RED + serverMessage.getServerMessageType());
-        printPrompt();
+    private void handleLoadGame(LoadGameMessage message, String playerCol) {
+        System.out.println(RED + "Game Loaded: ");
+        var game = message.getGame().getBoard();
+        CreateBoard.printBoard(game, playerCol);
+    }
 
+    private void handleError(ErrorMessage message) {
+        System.out.println(RED + "Error: " + message.getErrorDescription());
+    }
+
+    private void handleNotification(NotificationMessage message) {
+        System.out.println(RED + "Notification: " + message.getNotification());
+    }
+
+    private void printPrompt() {
+        System.out.print("\n" + RESET + ">>> " + GREEN);
     }
 }

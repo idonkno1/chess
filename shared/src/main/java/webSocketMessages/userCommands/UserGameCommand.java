@@ -25,11 +25,9 @@ public class UserGameCommand {
     }
 
     protected CommandType commandType;
-
     private final String authToken;
 
     protected int gameID;
-
 
     public String getAuthString() {
         return authToken;

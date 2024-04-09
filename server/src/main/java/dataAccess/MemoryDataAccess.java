@@ -45,6 +45,12 @@ public class MemoryDataAccess implements DataAccess{
         games.put(game.gameID(), game);
         return null;
     }
+
+    @Override
+    public void deleteGame(int gameID) {
+
+    }
+
     public GameData getGame(int gameID) {return games.get(gameID);}
 
     public AuthData createAuthToken(String username){

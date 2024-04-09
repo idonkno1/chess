@@ -1,8 +1,6 @@
 package ui;
 
 import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
 import com.google.gson.Gson;
 import model.GameData;
 import model.JoinReqData;
@@ -65,7 +63,7 @@ public class Client {
         assertGaming();
         ws.leaveGame(authToken, gameID);
         state = State.SIGNEDIN;
-        return "\n";
+        return "";
 
     }
 
@@ -73,30 +71,29 @@ public class Client {
         assertGaming();
         var piece = params[0].toUpperCase();
         ws.highlightMove(authToken, gameID, piece);
-        return "\n";
+        return "";
     }
 
     private String resignGame() throws ResponseException, IOException {
         assertPlaying();
         ws.resignGame(authToken, gameID);
         state = State.SIGNEDIN;
-        return "\n";
+        return "";
 
     }
 
     private String makeMove(String[] params) throws ResponseException, IOException {
         assertPlaying();
-        var currentSquare = comToPosition(params[0]);
-        var nextSquare = comToPosition(params[1]);
-        ChessMove chessMove = new ChessMove(currentSquare, nextSquare, null);
-        ws.makeMove(authToken, gameID, chessMove);
-        return "\n";
+        var currentSquare = params[0];
+        var nextSquare = params[1];
+        ws.makeMove(authToken, gameID, currentSquare, nextSquare);
+        return "";
     }
 
     private String redrawBoard() throws ResponseException {
         assertGaming();
         ws.redrawBoard(authToken, gameID);
-        return "\n";
+        return "";
     }
 
     private String observeGame(String[] params) throws ResponseException, IOException {
@@ -233,27 +230,8 @@ public class Client {
     }
 
     private void assertGaming() throws ResponseException {
-        if (state != State.PLAYING || state != State.OBSERVING) {
+        if (state != State.PLAYING && state != State.OBSERVING) {
             throw new ResponseException(400, "You must sign in");
         }
     }
-
-    public static ChessPosition comToPosition(String location){
-        var col = location.substring(0, 1).toLowerCase();
-        int row = Integer.parseInt(location.substring(1));
-
-        var colInt = switch (col) {
-            case "a" -> 1;
-            case "b" -> 2;
-            case "c" -> 3;
-            case "d" -> 4;
-            case "e" -> 5;
-            case "f" -> 6;
-            case "g" -> 7;
-            case "h" -> 8;
-            default -> throw new IllegalStateException("Unexpected value: " + col);
-        };
-        return new ChessPosition(row, colInt);
-    }
-
 }

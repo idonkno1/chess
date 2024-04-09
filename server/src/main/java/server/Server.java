@@ -29,7 +29,7 @@ public class Server {
     private final LoginService loginService = new LoginService(dataAccess);
     private final LogoutService logoutService = new LogoutService(dataAccess);
     private final RegisterService registerService = new RegisterService(dataAccess);
-    private final WebSocketHandler webSocketHandler = new WebSocketHandler();
+    private final WebSocketHandler webSocketHandler = new WebSocketHandler(dataAccess);
 
     public Server() {
 
@@ -92,7 +92,6 @@ public class Server {
         }
         try{
             ChessGame game =  joinGameService.joinGame(joinReq, authToken);
-            webSocketHandler.joinGame();
             res.status(200);
             res.type("application/json");
             return new Gson().toJson(game);

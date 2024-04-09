@@ -173,6 +173,16 @@ public class MySqlDataAccess implements DataAccess{
         }
     }
 
+    public void deleteGame(int gameID) {
+        var sql = "DELETE FROM games WHERE gameID = ?";
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, gameID);
+            ps.executeUpdate();
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public void clearDAO() {
         var sqls = new String[]{
