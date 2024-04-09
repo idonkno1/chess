@@ -1,9 +1,8 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
+
+import java.util.Collection;
 
 public class CreateBoard {
     private static final String[][] visualboard = new String[8][8];
@@ -51,7 +50,7 @@ public class CreateBoard {
         return squareColor + piece + RESET;
     }
 
-    public static void printBoard(ChessBoard board, String isWhite) {
+    public static void printBoard(ChessBoard board, String isWhite, Collection<ChessMove> moves) {
         initializeBoard(board);
         System.out.print(EscapeSequences.ERASE_SCREEN);
         printLabels(isWhite);
@@ -94,8 +93,8 @@ public class CreateBoard {
     public static void main(String[] args) {
         ChessBoard chessBoard = new ChessBoard();
         chessBoard.resetBoard();
-        printBoard(chessBoard,"WHITE");
-        printBoard(chessBoard,"BLACK");
+        printBoard(chessBoard,"WHITE", null);
+        printBoard(chessBoard,"BLACK", null);
 
     }
 }

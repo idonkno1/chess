@@ -42,16 +42,24 @@ public class Repl implements ServerMessageHandler{
             handleError((ErrorMessage) serverMessage);
         } else if (serverMessage instanceof NotificationMessage) {
             handleNotification((NotificationMessage) serverMessage);
-        } else {
+        } else if (serverMessage instanceof HighlightMessage) {
+            handleHighlight((HighlightMessage) serverMessage, playerCol);
+        }else {
             System.out.println(RED + "Unhandled server message type: " + serverMessage.getServerMessageType());
         }
         printPrompt();
     }
 
+    private void handleHighlight(HighlightMessage message, String playerCol) {
+        var game = message.getGame().getBoard();
+        var moves = message.getMoves();
+        CreateBoard.printBoard(game, playerCol, moves);
+    }
+
     private void handleLoadGame(LoadGameMessage message, String playerCol) {
         System.out.println(RED + "Game Loaded: ");
         var game = message.getGame().getBoard();
-        CreateBoard.printBoard(game, playerCol);
+        CreateBoard.printBoard(game, playerCol, null);
     }
 
     private void handleError(ErrorMessage message) {

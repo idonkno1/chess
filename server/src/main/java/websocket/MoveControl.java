@@ -2,6 +2,8 @@ package websocket;
 
 import chess.*;
 
+import java.util.Collection;
+
 public class MoveControl {
 
     private final ChessGame board;
@@ -14,13 +16,18 @@ public class MoveControl {
         this.nextSquare = nextSquare;
     }
 
-    public boolean moveControl(){
+    public boolean validMove(){
         var start = stringToPosition(currentSquare);
         var end = stringToPosition(nextSquare);
         var move = new ChessMove(start, end, null);
 
         var moves = board.validMoves(start);
         return moves.contains(move);
+    }
+
+    public Collection<ChessMove> moves(){
+        var start = stringToPosition(currentSquare);
+        return board.validMoves(start);
     }
 
     public ChessGame gameControl(){

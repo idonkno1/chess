@@ -47,7 +47,7 @@ public class ConnectionManager {
         }
     }
 
-    public void errorToSender(String VisitorName, ServerMessage serverMessage) throws IOException {
+    public void backToSender(String VisitorName, ServerMessage serverMessage) throws IOException {
         var removeList = new ArrayList<Connection>();
         for (var c : connections.values()) {
             if (c.session.isOpen()) {

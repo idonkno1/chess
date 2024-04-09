@@ -25,6 +25,7 @@ public class Client {
     private final ServerMessageHandler serverMessageHandler;
     private WebSocketFacade ws;
     private State state = State.SIGNEDOUT;
+    private static String playerColor;
 
 
     public Client(String serverUrl, ServerMessageHandler serverMessageHandler) {
@@ -67,10 +68,10 @@ public class Client {
 
     }
 
-    private String highlightMove(String[] params) throws ResponseException {
+    private String highlightMove(String[] params) throws ResponseException, IOException {
         assertGaming();
-        var piece = params[0].toUpperCase();
-        ws.highlightMove(authToken, gameID, piece);
+        var pieceSquare = params[0].toUpperCase();
+        ws.highlightMove(authToken, gameID, pieceSquare, playerColor);
         return "";
     }
 
@@ -90,9 +91,9 @@ public class Client {
         return "";
     }
 
-    private String redrawBoard() throws ResponseException {
+    private String redrawBoard() throws ResponseException, IOException {
         assertGaming();
-        ws.redrawBoard(authToken, gameID);
+        ws.redrawBoard(authToken, gameID, playerColor);
         return "";
     }
 
@@ -105,7 +106,7 @@ public class Client {
         ws = new WebSocketFacade(serverUrl, serverMessageHandler);
         ws.joinObserver(authToken, gameID);
 
-        CreateBoard.printBoard(game.getBoard(), "WHITE");
+        CreateBoard.printBoard(game.getBoard(), "WHITE", null);
         state = State.OBSERVING;
         return String.format("You are observing a chess game. Assigned chess ID: %d", gameID);
     }
@@ -114,21 +115,21 @@ public class Client {
         assertSignedIn();
         gameID = Integer.parseInt(params[0]);
 
-        var playerColor = params[1].toUpperCase();
+        playerColor = params[1].toUpperCase();
         var gameJoined = new JoinReqData(playerColor, gameID);
 
         ChessGame game =  server.joinGame(gameJoined, authToken);
         ws = new WebSocketFacade(serverUrl, serverMessageHandler);
         ws.joinPlayer(authToken, gameID, playerColor);
 
-        CreateBoard.printBoard(game.getBoard(), playerColor);
+        CreateBoard.printBoard(game.getBoard(), playerColor, null);
         state = State.PLAYING;
         return String.format("You are playing a chess game as %s. Assigned chess ID: %d", playerColor, gameID);
     }
 
     private String listGame() throws ResponseException {
         assertSignedIn();
-        var games = server.listGames(authToken);
+        GameData[] games = server.listGames(authToken);
         var res = new StringBuilder();
         var gson = new Gson();
         for(var game: games){
@@ -191,7 +192,7 @@ public class Client {
         if(state == State.PLAYING){
             return """
                     - move <CURRENT SQUARE> <NEXT SQUARE> ex: e3 e4
-                    - highlight <PIECE> (knight or n) - highlights possible moves for given piece
+                    - highlight <PIECE SQUARE> - highlights possible moves for piece on given square
                     - redraw - regenerates board
                     - resign - give up
                     - leave - straight up leave the table

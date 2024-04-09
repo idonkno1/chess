@@ -11,6 +11,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.HighlightMessage;
 import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.userCommands.JoinPlayer;
@@ -51,8 +52,16 @@ public class WebSocketHandler {
                     makeMove(makeMoveCommand.getAuthString(), makeMoveCommand.getGameID(), makeMoveCommand.getCurrentSquare(), makeMoveCommand.getNextSquare());
                 }
                 break;
+            case HIGHLIGHT:
+                if (command instanceof MakeMove makeMoveCommand) {
+                    highLight(makeMoveCommand.getAuthString(), makeMoveCommand.getGameID(), makeMoveCommand.getCurrentSquare());
+                }
+                break;
             case LEAVE:
                 leaveGame(command.getAuthString(), command.getGameID());
+                break;
+            case REDRAW:
+                redrawBoard(command.getAuthString(), command.getGameID());
                 break;
             case RESIGN:
                 resignGame(command.getAuthString(), command.getGameID());
@@ -60,12 +69,36 @@ public class WebSocketHandler {
         }
     }
 
+    private void redrawBoard(String authString, int gameID) throws SQLException, DataAccessException, IOException {
+        AuthData authData = dataAccess.getAuthToken(authString);
+        GameData gameData = dataAccess.getGame(gameID);
+        if (!dataAccess.isValidAuth(authString) || gameData == null) {connections.backToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));}
+
+        var gameNotification = new LoadGameMessage(gameData.game());
+        connections.backToSender(authData.username(), gameNotification);
+    }
+
+    private void highLight(String authString, int gameID, String currentSquare) throws SQLException, DataAccessException, IOException {
+        AuthData authData = dataAccess.getAuthToken(authString);
+        GameData gameData = dataAccess.getGame(gameID);
+
+        if (!dataAccess.isValidAuth(authString) || gameData == null) {connections.backToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));}
+
+        var board = gameData.game();
+        var moveControl = new MoveControl(board, currentSquare, null);
+
+        var moves = moveControl.moves();
+
+        var highlightNotification = new HighlightMessage(gameData.game(), moves);
+        connections.backToSender(authData.username(), highlightNotification);
+    }
+
     public void resignGame(String authString, int gameID) throws SQLException, DataAccessException, IOException {
         AuthData authData = dataAccess.getAuthToken(authString);
         GameData gameData = dataAccess.getGame(gameID);
 
         if (!dataAccess.isValidAuth(authString) || gameData == null) {
-            connections.errorToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));
+            connections.backToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));
         }
         var message = String.format("%s resigned the game", authData.username());
         var notification = new NotificationMessage(message);
@@ -82,7 +115,7 @@ public class WebSocketHandler {
         var blackPlayer = gameData.blackUsername();
 
         if (!dataAccess.isValidAuth(authString) || gameData == null) {
-            connections.errorToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));
+            connections.backToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));
         }
         if (authData.username().equals(whitePlayer)){
             gameData = new GameData(gameData.gameID(), null, gameData.blackUsername(), gameData.gameName(), gameData.game());
@@ -103,7 +136,7 @@ public class WebSocketHandler {
         AuthData authData = dataAccess.getAuthToken(authString);
         GameData gameData = dataAccess.getGame(gameID);
 
-        if (!dataAccess.isValidAuth(authString) || gameData == null) {connections.errorToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));}
+        if (!dataAccess.isValidAuth(authString) || gameData == null) {connections.backToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));}
 
         ChessGame.TeamColor gameCheck = null;
         String opponent = null;
@@ -115,13 +148,13 @@ public class WebSocketHandler {
             gameCheck = ChessGame.TeamColor.WHITE;
             opponent = gameData.whiteUsername();
         } else {
-            connections.errorToSender(authData.username(), new ErrorMessage("Error unknown player"));
+            connections.backToSender(authData.username(), new ErrorMessage("Error unknown player"));
         }
 
         var board = gameData.game();
         var moveControl = new MoveControl(board, currentSquare, nextSquare);
 
-        if(!moveControl.moveControl()){connections.errorToSender(authData.username(), new ErrorMessage("Error invalid move"));}
+        if(!moveControl.validMove()){connections.backToSender(authData.username(), new ErrorMessage("Error invalid move"));}
 
         gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), moveControl.gameControl());
         dataAccess.updateGame(gameData);
@@ -157,7 +190,7 @@ public class WebSocketHandler {
         GameData gameData = dataAccess.getGame(gameID);
 
         if (!dataAccess.isValidAuth(authString) || gameData == null) {
-            connections.errorToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));
+            connections.backToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));
         }
 
         connections.add(authData.username(), session);
@@ -171,7 +204,7 @@ public class WebSocketHandler {
         GameData gameData = dataAccess.getGame(gameID);
 
         if (!dataAccess.isValidAuth(authString) || gameData == null) {
-            connections.errorToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));
+            connections.backToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));
         }
 
         connections.add(authData.username(), session);

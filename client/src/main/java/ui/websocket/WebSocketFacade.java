@@ -4,10 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import ui.server.ResponseException;
 import webSocketMessages.ServerMessageDeserializer;
-import webSocketMessages.serverMessages.ErrorMessage;
-import webSocketMessages.serverMessages.LoadGameMessage;
-import webSocketMessages.serverMessages.NotificationMessage;
-import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.serverMessages.*;
 import webSocketMessages.userCommands.JoinPlayer;
 import webSocketMessages.userCommands.MakeMove;
 import webSocketMessages.userCommands.UserGameCommand;
@@ -51,6 +48,8 @@ public class WebSocketFacade extends Endpoint {
                         serverMessageHandler.notify((ErrorMessage) serverMessage, playerCol);
                     }else if (serverMessage instanceof LoadGameMessage) {
                         serverMessageHandler.notify((LoadGameMessage) serverMessage, playerCol);
+                    }else if (serverMessage instanceof HighlightMessage) {
+                        serverMessageHandler.notify((HighlightMessage) serverMessage, playerCol);
                     }
                 }
             });
@@ -81,7 +80,10 @@ public class WebSocketFacade extends Endpoint {
         this.session.getBasicRemote().sendText(new Gson().toJson(command));
     }
 
-    public void highlightMove(String authToken, int gameID, String piece) {
+    public void highlightMove(String authToken, int gameID, String pieceSquare, String playerColor) throws IOException {
+        playerCol = playerColor;
+        var command = new MakeMove(UserGameCommand.CommandType.HIGHLIGHT, authToken, gameID, pieceSquare, null);
+        this.session.getBasicRemote().sendText(new Gson().toJson(command));
     }
 
     public void resignGame(String authToken, int gameID) throws IOException {
@@ -94,8 +96,10 @@ public class WebSocketFacade extends Endpoint {
         this.session.getBasicRemote().sendText(new Gson().toJson(command));
     }
 
-    public void redrawBoard(String authToken, int gameID) {
-
+    public void redrawBoard(String authToken, int gameID, String playerColor) throws IOException {
+        playerCol = playerColor;
+        var command = new UserGameCommand(UserGameCommand.CommandType.REDRAW, authToken, gameID);
+        this.session.getBasicRemote().sendText(new Gson().toJson(command));
     }
 
 }
