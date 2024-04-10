@@ -23,6 +23,7 @@ public class MoveControl {
 
         var moves = board.validMoves(start);
         return moves.contains(move);
+
     }
 
     public Collection<ChessMove> moves(){
@@ -30,12 +31,16 @@ public class MoveControl {
         return board.validMoves(start);
     }
 
-    public ChessGame gameControl() throws InvalidMoveException {
+    public ChessGame gameControl() {
         var start = stringToPosition(currentSquare);
         var end = stringToPosition(nextSquare);
         var move = new ChessMove(start, end, null);
 
-        board.makeMove(move);
+        try {
+            board.makeMove(move);
+        } catch (InvalidMoveException e) {
+            throw new RuntimeException(e);
+        }
 
         return board;
     }

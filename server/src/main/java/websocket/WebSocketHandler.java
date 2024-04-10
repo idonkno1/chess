@@ -1,7 +1,6 @@
 package websocket;
 
 import chess.ChessGame;
-import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dataAccess.DataAccess;
@@ -37,7 +36,7 @@ public class WebSocketHandler {
     }
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String msg) throws SQLException, IOException, DataAccessException, InvalidMoveException {
+    public void onMessage(Session session, String msg) throws SQLException, IOException, DataAccessException{
         UserGameCommand command = gson.fromJson(msg, UserGameCommand.class);
         switch (command.getCommandType()) {
             case JOIN_PLAYER:
@@ -133,79 +132,89 @@ public class WebSocketHandler {
         connections.broadcast(authData.username(), notification);
     }
 
-    private void makeMove(String authString, int gameID, String currentSquare, String nextSquare) throws SQLException, DataAccessException, IOException, InvalidMoveException {
-        AuthData authData = dataAccess.getAuthToken(authString);
-        GameData gameData = dataAccess.getGame(gameID);
+    private void makeMove(String authString, int gameID, String currentSquare, String nextSquare) {
+        try {
+            AuthData authData = dataAccess.getAuthToken(authString);
+            GameData gameData = dataAccess.getGame(gameID);
 
-        if (!dataAccess.isValidAuth(authString) || gameData == null) {connections.backToSender(authData.username(), new ErrorMessage("authToken/gameID not valid"));}
+            if (!dataAccess.isValidAuth(authString) || gameData == null) {
+                connections.backToSender(authData.username(), new ErrorMessage("authToken/gameID not valid"));
+            }
 
-        ChessGame.TeamColor gameCheck = null;
-        String opponent = null;
-        String currentPlayer = authData.username();
-        if (currentPlayer.equals(gameData.whiteUsername())) {
-            gameCheck = ChessGame.TeamColor.BLACK;
-            opponent = gameData.blackUsername();
-        } else if (currentPlayer.equals(gameData.blackUsername())) {
-            gameCheck = ChessGame.TeamColor.WHITE;
-            opponent = gameData.whiteUsername();
-        } else {
-            connections.backToSender(authData.username(), new ErrorMessage("unknown player"));
+            ChessGame.TeamColor gameCheck = null;
+            String opponent = null;
+            String currentPlayer = authData.username();
+            if (currentPlayer.equals(gameData.whiteUsername())) {
+                gameCheck = ChessGame.TeamColor.BLACK;
+                opponent = gameData.blackUsername();
+            } else if (currentPlayer.equals(gameData.blackUsername())) {
+                gameCheck = ChessGame.TeamColor.WHITE;
+                opponent = gameData.whiteUsername();
+            } else {
+                connections.backToSender(authData.username(), new ErrorMessage("unknown player"));
+            }
+
+            var board = gameData.game();
+            var moveControl = new MoveControl(board, currentSquare, nextSquare);
+
+            if (!moveControl.validMove()) {
+                connections.backToSender(authData.username(), new ErrorMessage("invalid move"));
+            }
+
+            if(moveControl.validMove()) {
+                gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), moveControl.gameControl());
+                dataAccess.updateGame(gameData);
+
+                board = gameData.game();
+
+                var message = String.format("%s made the move %s %s", authData.username(), currentSquare, nextSquare);
+                var notification = new NotificationMessage(message);
+                connections.broadcast(authData.username(), notification);
+
+                if (board.isInCheckmate(gameCheck)) {
+                    var checkMessage = String.format("%s checkmated %s", currentPlayer, opponent);
+                    var checkNotification = new NotificationMessage(checkMessage);
+                    connections.broadcast("", checkNotification);
+
+                    var gameNotification = new LoadGameMessage(gameData.game());
+                    connections.broadcast("", gameNotification);
+
+                    var gameOverMessage = String.format("Game over! %s won!", currentPlayer);
+                    var gameOverNotification = new NotificationMessage(gameOverMessage);
+                    connections.broadcast("", gameOverNotification);
+                    dataAccess.deleteGame(gameID);
+
+                } else if (board.isInCheck(gameCheck)) {
+                    var checkmateMessage = String.format("%s checked %s", currentPlayer, opponent);
+                    var checkmateNotification = new NotificationMessage(checkmateMessage);
+                    connections.broadcast("", checkmateNotification);
+
+                    var gameNotification = new LoadGameMessage(gameData.game());
+                    connections.broadcast("", gameNotification);
+
+                } else if (board.isInStalemate(gameCheck)) {
+                    var stalemateMessage = String.format("%s stalemated %s", currentPlayer, opponent);
+                    var stalemateNotification = new NotificationMessage(stalemateMessage);
+                    connections.broadcast("", stalemateNotification);
+
+                    var gameNotification = new LoadGameMessage(gameData.game());
+                    connections.broadcast("", gameNotification);
+
+                    var gameOverMessage = "Game over! It is a tie";
+                    var gameOverNotification = new NotificationMessage(gameOverMessage);
+                    connections.broadcast("", gameOverNotification);
+                    dataAccess.deleteGame(gameID);
+
+                } else {
+                    var gameNotification = new LoadGameMessage(gameData.game());
+                    connections.broadcast("", gameNotification);
+                }
+            }
+        }catch(SQLException | DataAccessException | IOException e){
+            throw  new RuntimeException(e);
         }
 
-        var board = gameData.game();
-        var moveControl = new MoveControl(board, currentSquare, nextSquare);
-
-        if(!moveControl.validMove()){connections.backToSender(authData.username(), new ErrorMessage("invalid move"));}
-
-        gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), moveControl.gameControl());
-        dataAccess.updateGame(gameData);
-        
-        board = gameData.game();
-
-        var message = String.format("%s made the move %s %s", authData.username(), currentSquare, nextSquare);
-        var notification = new NotificationMessage(message);
-        connections.broadcast(authData.username(), notification);
-
-        if(board.isInCheckmate(gameCheck)){
-            var checkMessage = String.format("%s checkmated %s", currentPlayer, opponent);
-            var checkNotification = new NotificationMessage(checkMessage);
-            connections.broadcast("", checkNotification);
-
-            var gameNotification = new LoadGameMessage(gameData.game());
-            connections.broadcast("", gameNotification);
-
-            var gameOverMessage = String.format("Game over! %s won!", currentPlayer);
-            var gameOverNotification = new NotificationMessage(gameOverMessage);
-            connections.broadcast("", gameOverNotification);
-            dataAccess.deleteGame(gameID);
-
-        } else if (board.isInCheck(gameCheck)) {
-            var checkmateMessage = String.format("%s checked %s", currentPlayer, opponent);
-            var checkmateNotification = new NotificationMessage(checkmateMessage);
-            connections.broadcast("", checkmateNotification);
-
-            var gameNotification = new LoadGameMessage(gameData.game());
-            connections.broadcast("", gameNotification);
-
-        } else if (board.isInStalemate(gameCheck)) {
-            var stalemateMessage = String.format("%s stalemated %s", currentPlayer, opponent);
-            var stalemateNotification = new NotificationMessage(stalemateMessage);
-            connections.broadcast("", stalemateNotification);
-
-            var gameNotification = new LoadGameMessage(gameData.game());
-            connections.broadcast("", gameNotification);
-
-            var gameOverMessage = String.format("Game over! It is a tie");
-            var gameOverNotification = new NotificationMessage(gameOverMessage);
-            connections.broadcast("", gameOverNotification);
-            dataAccess.deleteGame(gameID);
-
-        } else {
-            var gameNotification = new LoadGameMessage(gameData.game());
-            connections.broadcast("", gameNotification);
-        }
     }
-
 
     public void observeGame(String authString, int gameID, Session session) throws SQLException, DataAccessException, IOException {
         AuthData authData = dataAccess.getAuthToken(authString);
