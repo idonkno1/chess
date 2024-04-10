@@ -261,7 +261,7 @@ public class ChessGame {
                 ChessPiece curPiece = tempBoard.getPiece(curPos);
 
                 if (curPiece != null && curPiece.getTeamColor() != teamColor) {
-                    Collection<ChessMove> potentialMoves = curPiece.pieceMoves(board, curPos);
+                    Collection<ChessMove> potentialMoves = curPiece.pieceMoves(tempBoard, curPos);
                     for (ChessMove move : potentialMoves) {
                         if (move.getEndPosition().equals(kingPosition)) {
                             return true;

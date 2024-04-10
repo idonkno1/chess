@@ -30,15 +30,12 @@ public class MoveControl {
         return board.validMoves(start);
     }
 
-    public ChessGame gameControl(){
+    public ChessGame gameControl() throws InvalidMoveException {
         var start = stringToPosition(currentSquare);
         var end = stringToPosition(nextSquare);
         var move = new ChessMove(start, end, null);
-        try {
-            board.makeMove(move);
-        } catch (InvalidMoveException e) {
-            throw new RuntimeException(e);
-        }
+
+        board.makeMove(move);
 
         return board;
     }
