@@ -46,7 +46,7 @@ public class Client {
                 case "create"-> createGame(params);
                 case "list" -> listGame();
                 case "join" -> joinGame(params);
-                case "observe" -> observeGame(params);
+                case "watch" -> observeGame(params);
                 case "redraw" -> redrawBoard();
                 case "move" -> makeMove(params);
                 case "resign" -> resignGame();
@@ -108,7 +108,7 @@ public class Client {
 
         CreateBoard.printBoard(game.getBoard(), "WHITE", null);
         state = State.OBSERVING;
-        return String.format("You are observing a chess game. Assigned chess ID: %d", gameID);
+        return String.format("You are watching game chess ID: %d", gameID);
     }
 
     private String joinGame(String[] params) throws ResponseException, IOException {
@@ -211,7 +211,7 @@ public class Client {
         return """
                 - create <gameName>
                 - join <gameID> [WHITE|BLACK]
-                - observe <gameID>
+                - watch <gameID>
                 - list - lists all games
                 - logout
                 - quit
