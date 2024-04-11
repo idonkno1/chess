@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import ui.server.ResponseException;
 import webSocketMessages.ServerMessageDeserializer;
 import webSocketMessages.serverMessages.*;
+import webSocketMessages.serverMessages.Error;
 import webSocketMessages.userCommands.JoinPlayer;
 import webSocketMessages.userCommands.MakeMove;
 import webSocketMessages.userCommands.UserGameCommand;
@@ -42,12 +43,12 @@ public class WebSocketFacade extends Endpoint {
                     ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
 
                     // Handle the message based on its type
-                    if (serverMessage instanceof NotificationMessage) {
-                        serverMessageHandler.notify((NotificationMessage) serverMessage, playerCol);
-                    }else if (serverMessage instanceof ErrorMessage) {
-                        serverMessageHandler.notify((ErrorMessage) serverMessage, playerCol);
-                    }else if (serverMessage instanceof LoadGameMessage) {
-                        serverMessageHandler.notify((LoadGameMessage) serverMessage, playerCol);
+                    if (serverMessage instanceof Notification) {
+                        serverMessageHandler.notify((Notification) serverMessage, playerCol);
+                    }else if (serverMessage instanceof Error) {
+                        serverMessageHandler.notify((Error) serverMessage, playerCol);
+                    }else if (serverMessage instanceof LoadGame) {
+                        serverMessageHandler.notify((LoadGame) serverMessage, playerCol);
                     }else if (serverMessage instanceof HighlightMessage) {
                         serverMessageHandler.notify((HighlightMessage) serverMessage, playerCol);
                     }
