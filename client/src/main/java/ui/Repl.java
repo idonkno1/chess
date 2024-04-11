@@ -2,6 +2,7 @@ package ui;
 
 import ui.websocket.ServerMessageHandler;
 import webSocketMessages.serverMessages.*;
+import webSocketMessages.serverMessages.Error;
 
 import java.util.Scanner;
 
@@ -36,12 +37,12 @@ public class Repl implements ServerMessageHandler{
 
     @Override
     public void notify(ServerMessage serverMessage, String playerCol) {
-        if (serverMessage instanceof LoadGameMessage) {
-            handleLoadGame((LoadGameMessage) serverMessage, playerCol);
-        } else if (serverMessage instanceof ErrorMessage) {
-            handleError((ErrorMessage) serverMessage);
-        } else if (serverMessage instanceof NotificationMessage) {
-            handleNotification((NotificationMessage) serverMessage);
+        if (serverMessage instanceof LoadGame) {
+            handleLoadGame((LoadGame) serverMessage, playerCol);
+        } else if (serverMessage instanceof Error) {
+            handleError((Error) serverMessage);
+        } else if (serverMessage instanceof Notification) {
+            handleNotification((Notification) serverMessage);
         } else if (serverMessage instanceof HighlightMessage) {
             handleHighlight((HighlightMessage) serverMessage, playerCol);
         }else {
@@ -57,17 +58,17 @@ public class Repl implements ServerMessageHandler{
         CreateBoard.printBoard(game, playerCol, moves);
     }
 
-    private void handleLoadGame(LoadGameMessage message, String playerCol) {
+    private void handleLoadGame(LoadGame message, String playerCol) {
         System.out.println(RED + "Game Loaded: ");
         var game = message.getGame().getBoard();
         CreateBoard.printBoard(game, playerCol, null);
     }
 
-    private void handleError(ErrorMessage message) {
+    private void handleError(Error message) {
         System.out.println(RED + "Error: " + message.getErrorDescription());
     }
 
-    private void handleNotification(NotificationMessage message) {
+    private void handleNotification(Notification message) {
         System.out.println(RED + "Notification: " + message.getNotification());
     }
 
