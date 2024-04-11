@@ -47,11 +47,11 @@ public class ConnectionManager {
         }
     }
 
-    public void backToSender(String VisitorName, ServerMessage serverMessage) throws IOException {
+    public void backToSender(String visitorName, ServerMessage serverMessage) throws IOException {
         var removeList = new ArrayList<Connection>();
         for (var c : connections.values()) {
             if (c.session.isOpen()) {
-                if (c.username.equals(VisitorName)) {
+                if (c.username.equals(visitorName)) {
                     String jsonMessage = gson.toJson(serverMessage);
                     c.send(jsonMessage);
                 }

@@ -10,10 +10,10 @@ import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.HighlightMessage;
-import webSocketMessages.serverMessages.LoadGameMessage;
-import webSocketMessages.serverMessages.NotificationMessage;
+import webSocketMessages.serverMessages.LoadGame;
+import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.userCommands.JoinPlayer;
 import webSocketMessages.userCommands.MakeMove;
 import webSocketMessages.userCommands.UserGameCommand;
@@ -72,10 +72,10 @@ public class WebSocketHandler {
     private void redrawBoard(String authString, int gameID) throws SQLException, DataAccessException, IOException {
         AuthData authData = dataAccess.getAuthToken(authString);
         GameData gameData = dataAccess.getGame(gameID);
-        if (!dataAccess.isValidAuth(authString) || gameData == null) {connections.backToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));}
+        if (!dataAccess.isValidAuth(authString) || gameData == null) {connections.backToSender(authData.username(), new Error("Error authToken/gameID not valid"));}
 
         if(dataAccess.isValidAuth(authString)) {
-            var gameNotification = new LoadGameMessage(gameData.game());
+            var gameNotification = new LoadGame(gameData.game());
             connections.backToSender(authData.username(), gameNotification);
         }
     }
@@ -84,7 +84,7 @@ public class WebSocketHandler {
         AuthData authData = dataAccess.getAuthToken(authString);
         GameData gameData = dataAccess.getGame(gameID);
 
-        if (!dataAccess.isValidAuth(authString) || gameData == null) {connections.backToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));}
+        if (!dataAccess.isValidAuth(authString) || gameData == null) {connections.backToSender(authData.username(), new Error("Error authToken/gameID not valid"));}
 
         if(dataAccess.isValidAuth(authString)) {
             var board = gameData.game();
@@ -102,11 +102,11 @@ public class WebSocketHandler {
         GameData gameData = dataAccess.getGame(gameID);
 
         if (!dataAccess.isValidAuth(authString) || gameData == null) {
-            connections.backToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));
+            connections.backToSender(authData.username(), new Error("Error authToken/gameID not valid"));
         }
         if(dataAccess.isValidAuth(authString)) {
             var message = String.format("%s resigned the game", authData.username());
-            var notification = new NotificationMessage(message);
+            var notification = new Notification(message);
 
             dataAccess.deleteGame(gameID);
             connections.broadcast("", notification);
@@ -121,7 +121,7 @@ public class WebSocketHandler {
         var blackPlayer = gameData.blackUsername();
 
         if (!dataAccess.isValidAuth(authString)) {
-            connections.backToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));
+            connections.backToSender(authData.username(), new Error("Error authToken/gameID not valid"));
         }
 
         if(dataAccess.isValidAuth(authString)) {
@@ -135,7 +135,7 @@ public class WebSocketHandler {
 
             connections.remove(authData.username());
             var message = String.format("%s left the game", authData.username());
-            var notification = new NotificationMessage(message);
+            var notification = new Notification(message);
 
             connections.broadcast(authData.username(), notification);
         }
@@ -147,7 +147,7 @@ public class WebSocketHandler {
             GameData gameData = dataAccess.getGame(gameID);
 
             if (!dataAccess.isValidAuth(authString) || gameData == null) {
-                connections.backToSender(authData.username(), new ErrorMessage("authToken/gameID not valid"));
+                connections.backToSender(authData.username(), new Error("authToken/gameID not valid"));
             }
 
             if(dataAccess.isValidAuth(authString)) {
@@ -162,14 +162,14 @@ public class WebSocketHandler {
                     gameCheck = ChessGame.TeamColor.WHITE;
                     opponent = gameData.whiteUsername();
                 } else {
-                    connections.backToSender(authData.username(), new ErrorMessage("unknown player"));
+                    connections.backToSender(authData.username(), new Error("unknown player"));
                 }
 
                 var board = gameData.game();
                 var moveControl = new MoveControl(board, currentSquare, nextSquare);
 
                 if (!moveControl.validMove()) {
-                    connections.backToSender(authData.username(), new ErrorMessage("invalid move"));
+                    connections.backToSender(authData.username(), new Error("invalid move"));
                 }
 
                 if (moveControl.validMove()) {
@@ -179,45 +179,45 @@ public class WebSocketHandler {
                     board = gameData.game();
 
                     var message = String.format("%s made the move %s %s", authData.username(), currentSquare, nextSquare);
-                    var notification = new NotificationMessage(message);
+                    var notification = new Notification(message);
                     connections.broadcast(authData.username(), notification);
 
                     if (board.isInCheckmate(gameCheck)) {
                         var checkMessage = String.format("%s checkmated %s", currentPlayer, opponent);
-                        var checkNotification = new NotificationMessage(checkMessage);
+                        var checkNotification = new Notification(checkMessage);
                         connections.broadcast("", checkNotification);
 
-                        var gameNotification = new LoadGameMessage(gameData.game());
+                        var gameNotification = new LoadGame(gameData.game());
                         connections.broadcast("", gameNotification);
 
                         var gameOverMessage = String.format("Game over! %s won!", currentPlayer);
-                        var gameOverNotification = new NotificationMessage(gameOverMessage);
+                        var gameOverNotification = new Notification(gameOverMessage);
                         connections.broadcast("", gameOverNotification);
                         dataAccess.deleteGame(gameID);
 
                     } else if (board.isInCheck(gameCheck)) {
                         var checkmateMessage = String.format("%s checked %s", currentPlayer, opponent);
-                        var checkmateNotification = new NotificationMessage(checkmateMessage);
+                        var checkmateNotification = new Notification(checkmateMessage);
                         connections.broadcast("", checkmateNotification);
 
-                        var gameNotification = new LoadGameMessage(gameData.game());
+                        var gameNotification = new LoadGame(gameData.game());
                         connections.broadcast("", gameNotification);
 
                     } else if (board.isInStalemate(gameCheck)) {
                         var stalemateMessage = String.format("%s stalemated %s", currentPlayer, opponent);
-                        var stalemateNotification = new NotificationMessage(stalemateMessage);
+                        var stalemateNotification = new Notification(stalemateMessage);
                         connections.broadcast("", stalemateNotification);
 
-                        var gameNotification = new LoadGameMessage(gameData.game());
+                        var gameNotification = new LoadGame(gameData.game());
                         connections.broadcast("", gameNotification);
 
                         var gameOverMessage = "Game over! It is a tie";
-                        var gameOverNotification = new NotificationMessage(gameOverMessage);
+                        var gameOverNotification = new Notification(gameOverMessage);
                         connections.broadcast("", gameOverNotification);
                         dataAccess.deleteGame(gameID);
 
                     } else {
-                        var gameNotification = new LoadGameMessage(gameData.game());
+                        var gameNotification = new LoadGame(gameData.game());
                         connections.broadcast("", gameNotification);
                     }
                 }
@@ -233,13 +233,13 @@ public class WebSocketHandler {
         GameData gameData = dataAccess.getGame(gameID);
 
         if (!dataAccess.isValidAuth(authString) || gameData == null) {
-            connections.backToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));
+            connections.backToSender(authData.username(), new Error("Error authToken/gameID not valid"));
         }
 
         if(dataAccess.isValidAuth(authString)) {
             connections.add(authData.username(), session);
             var message = String.format("%s is watching", authData.username());
-            var notification = new NotificationMessage(message);
+            var notification = new Notification(message);
             connections.broadcast(authData.username(), notification);
         }
     }
@@ -249,13 +249,13 @@ public class WebSocketHandler {
         GameData gameData = dataAccess.getGame(gameID);
 
         if (!dataAccess.isValidAuth(authString) || gameData == null) {
-            connections.backToSender(authData.username(), new ErrorMessage("Error authToken/gameID not valid"));
+            connections.backToSender(authData.username(), new Error("Error authToken/gameID not valid"));
         }
 
         if(dataAccess.isValidAuth(authString)) {
             connections.add(authData.username(), session);
             var message = String.format("%s is playing as %s", authData.username(), playerColor);
-            var notification = new NotificationMessage(message);
+            var notification = new Notification(message);
             connections.broadcast(authData.username(), notification);
         }
     }
