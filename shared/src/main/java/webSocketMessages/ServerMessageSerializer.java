@@ -23,10 +23,10 @@ public class ServerMessageSerializer implements JsonSerializer<ServerMessage> {
             jsonObject.add("game", context.serialize(((LoadGame) src).getGame()));
 
         } else if (src instanceof Error) {
-            jsonObject.addProperty("errorDescription", ((Error) src).getErrorDescription());
+            jsonObject.addProperty("errorMessage", ((Error) src).getErrorDescription());
 
         } else if (src instanceof Notification) {
-            jsonObject.addProperty("notification", ((Notification) src).getNotification());
+            jsonObject.addProperty("message", ((Notification) src).getNotification());
 
         }
         return jsonObject;

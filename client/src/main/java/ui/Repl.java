@@ -65,7 +65,7 @@ public class Repl implements ServerMessageHandler{
     }
 
     private void handleError(Error message) {
-        System.out.println(RED + "Error: " + message.getErrorDescription());
+        System.out.println(RED + message.getErrorDescription());
     }
 
     private void handleNotification(Notification message) {
